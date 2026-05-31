@@ -167,7 +167,7 @@
     let localScholarsData = {};
     let currentTrackUrl = "";
     let activeAudioElement = null;
-    let isInternalBack = false; // ٹریکنگ کے لیے کہ ہوم پیج پر کیسے جا رہے ہیں
+    let isInternalBack = false;
 
     function loadData() {
         database.ref('scholars').on('value', (snapshot) => {
@@ -240,7 +240,10 @@
 
             if (scholar.tracks) {
                 let trackIndex = 1;
-                Object.keys(scholar.tracks).forEach(trackId => {
+                // ٹریکس کی چابیاں نکال کر الٹ (reverse) کر دیں تاکہ نیا پہلے شو ہو
+                const trackKeys = Object.keys(scholar.tracks).reverse();
+                
+                trackKeys.forEach(trackId => {
                     const t = scholar.tracks[trackId];
                     const durationText = t.duration ? `⏱️: ${t.duration}` : '⏱️ Duration: Unknown';
                     const isActive = (currentTrackUrl === t.file) ? 'active-track' : '';
@@ -264,7 +267,6 @@
                 list.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>کوئی بیان موجود نہیں ہے۔</p>";
             }
 
-            // موبائل کے ہارڈویئر بیک بٹن کو ہینڈل کرنے کے لیے ہسٹری اسٹیٹ پش کریں
             window.history.pushState({ page: 'player' }, '');
         }, 1500);
     }
@@ -347,7 +349,6 @@
         }
     }
 
-    // یہ فنکشن ہوم پیج پر واپس لانے کا کام کرے گا
     function goHome() {
         document.getElementById('player-view').classList.add('hidden');
         document.getElementById('loading-view').style.display = 'flex';
@@ -360,23 +361,18 @@
         }, 1500);
     }
 
-    // جب اسکرین پر بنے مینوئل "Back" بٹن پر کلک کیا جائے تو ہسٹری کو بھی ایک قدم پیچھے بھیجیں
     function goHomeExplicit() {
         isInternalBack = true;
         window.history.back();
     }
 
-    // موبائل کے بیک بٹن اور مینوئل ہسٹری چینج کو سنبھالنے والا ایونٹ لسنر
     window.addEventListener('popstate', (event) => {
         const playerView = document.getElementById('player-view');
-        
-        // اگر پلیئر ویو کھلا ہوا ہے اور یوزر بیک بٹن دباتا ہے
         if (!playerView.classList.contains('hidden')) {
             goHome();
         }
     });
 
-    // Modal Control Functions
     function toggleModal(show) {
         const modal = document.getElementById('requestModal');
         modal.style.display = show ? 'flex' : 'none';
