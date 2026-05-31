@@ -65,11 +65,11 @@
 
         .track-details { padding: 15px; text-align: right; direction: rtl; background: #fff; }
         .track-title { 
-        margin: 0 0 6px 0; 
-        font-size: 14px;            /* سائز چھوٹا کرنے کے لیے */
-        color: #1a5276; 
-        font-weight: normal;        /* بولڈ ختم کرنے کے لیے */
-        line-height: 1.4;
+            margin: 0 0 6px 0; 
+            font-size: 14px;            
+            color: #1a5276; 
+            font-weight: normal;        
+            line-height: 1.4;
         }
         
         .track-duration { margin: 0; font-size: 13px; color: #7f8c8d; font-weight: 500; display: flex; align-items: center; justify-content: flex-start; gap: 5px; }
@@ -126,7 +126,7 @@
     </div>
 
     <div id="player-view" class="hidden">
-        <button class="back-btn" onclick="goHome()">← Back</button>
+        <button class="back-btn" onclick="goHomeExplicit()">← Back</button>
         <div style="text-align:center; margin-bottom: 25px;">
             <img id="scholar-img" src="" width="150" height="150" style="border-radius:50%; border: 4px solid #1a5276; box-shadow: 0 4px 10px rgba(0,0,0,0.15); object-fit: cover;">
             <h2 id="scholar-name" style="color: #2c3e50; margin-top: 12px; font-size: 22px;"></h2>
@@ -167,6 +167,7 @@
     let localScholarsData = {};
     let currentTrackUrl = "";
     let activeAudioElement = null;
+    let isInternalBack = false; // ٹریکنگ کے لیے کہ ہوم پیج پر کیسے جا رہے ہیں
 
     function loadData() {
         database.ref('scholars').on('value', (snapshot) => {
@@ -262,6 +263,9 @@
             } else {
                 list.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>کوئی بیان موجود نہیں ہے۔</p>";
             }
+
+            // موبائل کے ہارڈویئر بیک بٹن کو ہینڈل کرنے کے لیے ہسٹری اسٹیٹ پش کریں
+            window.history.pushState({ page: 'player' }, '');
         }, 1500);
     }
 
@@ -343,6 +347,7 @@
         }
     }
 
+    // یہ فنکشن ہوم پیج پر واپس لانے کا کام کرے گا
     function goHome() {
         document.getElementById('player-view').classList.add('hidden');
         document.getElementById('loading-view').style.display = 'flex';
@@ -355,6 +360,22 @@
         }, 1500);
     }
 
+    // جب اسکرین پر بنے مینوئل "Back" بٹن پر کلک کیا جائے تو ہسٹری کو بھی ایک قدم پیچھے بھیجیں
+    function goHomeExplicit() {
+        isInternalBack = true;
+        window.history.back();
+    }
+
+    // موبائل کے بیک بٹن اور مینوئل ہسٹری چینج کو سنبھالنے والا ایونٹ لسنر
+    window.addEventListener('popstate', (event) => {
+        const playerView = document.getElementById('player-view');
+        
+        // اگر پلیئر ویو کھلا ہوا ہے اور یوزر بیک بٹن دباتا ہے
+        if (!playerView.classList.contains('hidden')) {
+            goHome();
+        }
+    });
+
     // Modal Control Functions
     function toggleModal(show) {
         const modal = document.getElementById('requestModal');
@@ -364,7 +385,6 @@
         }
     }
 
-    // FIXED: Corrected reference error by removing non-existent 'req-name' field
     function submitRequest() {
         const msgText = document.getElementById('req-message').value.trim();
 
