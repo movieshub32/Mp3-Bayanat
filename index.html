@@ -403,17 +403,7 @@
         });
     }
 
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) { 
-            if (activeAudioElement) {
-                activeAudioElement.pause();
-            }
-            const iframe = document.getElementById('bayan-iframe');
-            if (iframe) {
-                document.getElementById('media-container').innerHTML = "";
-            }
-        }
-    });
+
 
     loadData();
 </script>
