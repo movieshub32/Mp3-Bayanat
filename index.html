@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        /* ===== CSS RESET & BASE ===== */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
             --primary: #1a5276;
@@ -23,8 +22,6 @@
             --text-main: #2c3e50;
             --text-muted: #7f8c8d;
             --border: #eef2f5;
-            --success: #27ae60;
-            --danger: #e74c3c;
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
             --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
             --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
@@ -33,36 +30,28 @@
             --radius-lg: 18px;
             --nav-h: 64px;
             --mini-player-h: 64px;
-            --header-h: 70px;
         }
-
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
+            background: var(--bg); color: var(--text-main);
             min-height: 100vh;
             padding-bottom: calc(var(--nav-h) + var(--mini-player-h) + 8px);
             overflow-x: hidden;
         }
 
-        /* ===== HEADER ===== */
+        /* HEADER */
         header {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 16px 15px 14px;
-            text-align: center;
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            color: white; padding: 16px 15px 14px; text-align: center;
+            box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 100;
         }
         header h1 { font-size: 22px; letter-spacing: 1px; font-weight: 700; }
         header h5 { margin-top: 3px; font-size: 12px; opacity: 0.85; font-weight: 400; }
         .request-btn {
             position: absolute; top: 18px; left: 15px;
-            background: var(--accent); color: white;
-            border: none; padding: 8px 13px; border-radius: 20px; font-size: 12px;
+            background: var(--accent); color: white; border: none;
+            padding: 8px 13px; border-radius: 20px; font-size: 12px;
             font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2); transition: all 0.2s;
         }
@@ -73,27 +62,12 @@
             .request-btn:hover { transform: translateX(-50%) scale(1.04); }
         }
 
-        /* ===== LAYOUT ===== */
+        /* LAYOUT */
         .container { padding: 18px; max-width: 640px; margin: auto; }
-
-        /* ===== TABS ===== */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* ===== SEARCH ===== */
-        .search-container { margin-bottom: 18px; }
-        .search-input {
-            width: 100%; padding: 12px 16px;
-            border: 1.5px solid var(--border); border-radius: var(--radius-md);
-            font-size: 15px; outline: none;
-            transition: border-color 0.25s, box-shadow 0.25s;
-            text-align: right; direction: rtl;
-            background: white;
-            box-shadow: var(--shadow-sm);
-        }
-        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,82,118,0.12); }
-
-        /* ===== SCHOLAR GRID ===== */
+        /* SCHOLAR GRID */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
         .card {
             background: var(--card-bg); border-radius: var(--radius-lg);
@@ -112,7 +86,7 @@
             direction: rtl; box-shadow: 0 2px 6px rgba(0,0,0,0.18);
         }
 
-        /* ===== TRACK ITEMS ===== */
+        /* TRACK ITEMS */
         .track-item {
             background: var(--card-bg); margin-bottom: 16px;
             border-radius: var(--radius-md); cursor: pointer;
@@ -122,7 +96,7 @@
         }
         .track-item:hover { transform: scale(1.01); box-shadow: var(--shadow-md); }
         .thumb-container { position: relative; width: 100%; height: 155px; overflow: hidden; }
-        .track-item img { width: 100%; height: 155px; object-fit: cover; display: block; transition: filter 0.3s; }
+        .track-item img { width: 100%; height: 155px; object-fit: cover; display: block; }
         .track-number-badge {
             position: absolute; top: 10px; right: 10px;
             background: rgba(0,0,0,0.62); color: white;
@@ -141,12 +115,9 @@
         .track-title { font-size: 14px; color: var(--primary); font-weight: 500; line-height: 1.45; margin-bottom: 6px; }
         .track-meta { display: flex; align-items: center; justify-content: space-between; }
         .track-duration { font-size: 12px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 4px; }
-        
-        /* Track Action Buttons */
         .track-actions { display: flex; gap: 6px; align-items: center; }
         .track-action-btn {
-            background: none; border: none; cursor: pointer;
-            color: var(--text-muted); font-size: 16px;
+            background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 16px;
             padding: 5px 6px; border-radius: 6px; transition: all 0.2s;
             display: flex; align-items: center; justify-content: center;
         }
@@ -154,7 +125,7 @@
         .track-action-btn.fav-btn.favorited { color: #e74c3c; }
         .track-action-btn.fav-btn:hover { color: #e74c3c; }
 
-        /* ===== LOADING ===== */
+        /* LOADING */
         .loader-container {
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 300px; width: 100%;
@@ -167,36 +138,24 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .loader-text { margin-top: 14px; color: var(--primary); font-weight: bold; font-size: 15px; }
 
-        /* ===== PLAYER BAR (hidden when mini player used) ===== */
-        .player-bar {
-            position: fixed; bottom: var(--nav-h); width: 100%;
-            background: var(--primary-dark);
-            display: none;
-            z-index: 900;
-            box-shadow: 0 -3px 12px rgba(0,0,0,0.18);
+        /* TAB TRANSITION OVERLAY */
+        #tab-loader-overlay {
+            position: fixed; inset: 0; background: var(--bg); z-index: 500;
+            display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
         }
-        .audio-mini-spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 22px; height: 22px; animation: spin 0.85s linear infinite; }
-        .audio-loading-box { display: flex; align-items: center; justify-content: center; color: white; gap: 10px; font-size: 14px; padding: 14px; }
+        #tab-loader-overlay.show { display: flex; }
 
-        /* ===== MINI PLAYER ===== */
+        /* MINI PLAYER */
         #mini-player {
-            position: fixed;
-            bottom: var(--nav-h);
-            left: 0; right: 0;
-            height: var(--mini-player-h);
-            background: var(--primary-dark);
-            display: none;
-            align-items: center;
-            gap: 10px;
-            padding: 0 14px;
-            z-index: 900;
-            box-shadow: 0 -3px 12px rgba(0,0,0,0.2);
-            cursor: pointer;
+            position: fixed; bottom: var(--nav-h); left: 0; right: 0;
+            height: var(--mini-player-h); background: var(--primary-dark);
+            display: none; align-items: center; gap: 10px; padding: 0 14px;
+            z-index: 900; box-shadow: 0 -3px 12px rgba(0,0,0,0.2); cursor: pointer;
         }
         #mini-player.visible { display: flex; }
         #mini-thumb {
-            width: 44px; height: 44px; border-radius: 8px;
-            object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2);
+            width: 44px; height: 44px; border-radius: 8px; object-fit: cover;
+            flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2);
         }
         #mini-info { flex: 1; overflow: hidden; }
         #mini-title {
@@ -206,19 +165,15 @@
         }
         #mini-scholar { color: rgba(255,255,255,0.65); font-size: 11px; direction: rtl; text-align: right; }
         .mini-btn {
-            background: rgba(255,255,255,0.12); border: none;
-            color: white; width: 36px; height: 36px; border-radius: 50%;
-            cursor: pointer; font-size: 14px; display: flex;
-            align-items: center; justify-content: center; flex-shrink: 0;
-            transition: background 0.2s;
+            background: rgba(255,255,255,0.12); border: none; color: white;
+            width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s;
         }
         .mini-btn:hover { background: rgba(255,255,255,0.22); }
-        .mini-playing-bars {
-            display: flex; align-items: flex-end; gap: 2px; height: 20px; flex-shrink: 0;
-        }
+        .mini-playing-bars { display: flex; align-items: flex-end; gap: 2px; height: 20px; flex-shrink: 0; }
         .mini-playing-bars span {
-            display: block; width: 3px; border-radius: 2px;
-            background: var(--accent); animation: sound-bars 0.9s ease-in-out infinite alternate;
+            display: block; width: 3px; border-radius: 2px; background: var(--accent);
+            animation: sound-bars 0.9s ease-in-out infinite alternate;
         }
         .mini-playing-bars span:nth-child(1) { height: 8px; animation-delay: 0s; }
         .mini-playing-bars span:nth-child(2) { height: 14px; animation-delay: 0.2s; }
@@ -227,23 +182,30 @@
         @keyframes sound-bars { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
         #mini-player.paused .mini-playing-bars span { animation-play-state: paused; }
 
-        /* ===== BOTTOM NAV ===== */
+        /* FIX 2: Mini player buffering spinner */
+        #mini-loading-spinner {
+            display: none;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.25);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+            flex-shrink: 0;
+        }
+        #mini-player.buffering #mini-loading-spinner { display: block; }
+        #mini-player.buffering .mini-playing-bars { display: none; }
+
+        /* BOTTOM NAV */
         #bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: var(--nav-h);
-            background: white;
-            border-top: 1.5px solid var(--border);
-            display: flex; align-items: stretch;
-            z-index: 1000;
+            position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h);
+            background: white; border-top: 1.5px solid var(--border);
+            display: flex; align-items: stretch; z-index: 1000;
             box-shadow: 0 -2px 16px rgba(0,0,0,0.08);
         }
         .nav-tab {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 4px; cursor: pointer; transition: all 0.2s;
-            border: none; background: none; padding: 0;
-            color: var(--text-muted); font-size: 10px; font-weight: 600;
-            letter-spacing: 0.3px;
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; cursor: pointer; transition: all 0.2s; border: none; background: none; padding: 0;
+            color: var(--text-muted); font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
         }
         .nav-tab i { font-size: 20px; transition: transform 0.2s, color 0.2s; }
         .nav-tab.active { color: var(--primary); }
@@ -251,7 +213,7 @@
         .nav-tab:hover { color: var(--primary-light); }
         .nav-tab-label { font-size: 10px; }
 
-        /* ===== BACK BUTTON ===== */
+        /* BACK BUTTON */
         .back-btn {
             background: var(--primary); color: white; border: none;
             padding: 9px 20px; border-radius: 7px; cursor: pointer;
@@ -260,12 +222,11 @@
         }
         .back-btn:hover { background: var(--primary-dark); }
 
-        /* ===== SCHOLAR DETAIL HEADER ===== */
+        /* SCHOLAR HEADER */
         .scholar-header-card {
-            text-align: center; margin-bottom: 22px;
-            background: white; border-radius: var(--radius-lg);
-            padding: 22px 16px; box-shadow: var(--shadow-sm);
-            border: 1.5px solid var(--border);
+            text-align: center; margin-bottom: 22px; background: #2E2929;
+            border-radius: var(--radius-lg); padding: 22px 16px;
+            box-shadow: var(--shadow-sm); border: 1.5px solid var(--border);
         }
         .scholar-header-card img {
             width: 120px; height: 120px; border-radius: 50%;
@@ -274,27 +235,20 @@
         }
         .scholar-header-card h2 { color: var(--text-main); margin-top: 12px; font-size: 20px; }
 
-        /* ===== FULL PLAYER MODAL ===== */
+        /* FULL PLAYER MODAL */
         #full-player-modal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.75); z-index: 2000;
-            justify-content: center; align-items: flex-end;
-            backdrop-filter: blur(6px);
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            z-index: 2000; justify-content: center; align-items: flex-end; backdrop-filter: blur(6px);
         }
         #full-player-modal.open { display: flex; }
         .full-player-sheet {
-            background: var(--primary-dark);
-            width: 100%; max-width: 640px;
-            border-radius: 20px 20px 0 0;
-            padding: 20px 20px 32px;
-            animation: slideUp 0.3s ease;
+            background: var(--primary-dark); width: 100%; max-width: 640px;
+            border-radius: 20px 20px 0 0; padding: 20px 20px 32px;
+            animation: slideUp 0.3s ease; position: relative;
         }
         @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .full-player-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin: 0 auto 16px; }
-        .full-player-thumb {
-            width: 100%; max-height: 200px; object-fit: cover;
-            border-radius: 12px; margin-bottom: 14px;
-        }
+        .full-player-thumb { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 14px; }
         .full-player-title { color: white; font-size: 15px; font-weight: 600; text-align: right; direction: rtl; margin-bottom: 4px; line-height: 1.4; }
         .full-player-scholar { color: rgba(255,255,255,0.65); font-size: 12px; text-align: right; direction: rtl; margin-bottom: 14px; }
         .full-player-controls { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 14px; }
@@ -310,9 +264,9 @@
         .progress-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; appearance: none; outline: none; }
         .progress-bar::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
         .time-label { color: rgba(255,255,255,0.6); font-size: 11px; min-width: 36px; }
-        .close-fp-btn { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; }
+        .close-fp-btn { position: absolute; top: 3px; right: 16px; background: rgba(255,255,255,0.1); border: none; color: red; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; }
 
-        /* ===== MODAL ===== */
+        /* MODAL */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .modal.open { display: flex; }
         .modal-content { background: white; padding: 24px; border-radius: var(--radius-md); width: 92%; max-width: 420px; text-align: right; direction: rtl; box-shadow: var(--shadow-lg); animation: slideDown 0.3s ease; }
@@ -324,10 +278,8 @@
         .btn-submit { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 7px; cursor: pointer; font-weight: bold; }
         .btn-cancel { background: #bdc3c7; color: #333; border: none; padding: 10px 20px; border-radius: 7px; cursor: pointer; font-weight: bold; }
 
-        /* ===== FAVORITES TAB ===== */
-        .fav-empty, .history-empty {
-            text-align: center; padding: 60px 20px; color: var(--text-muted);
-        }
+        /* FAVORITES & HISTORY */
+        .fav-empty, .history-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
         .fav-empty i, .history-empty i { font-size: 48px; margin-bottom: 14px; display: block; opacity: 0.35; }
         .fav-empty p, .history-empty p { font-size: 14px; }
 
@@ -336,40 +288,71 @@
             display: flex; align-items: center; gap: 12px;
             padding: 10px 12px; margin-bottom: 12px;
             box-shadow: var(--shadow-sm); border: 1.5px solid var(--border);
-            cursor: pointer; transition: box-shadow 0.2s;
+            cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s;
+            position: relative; overflow: hidden;
         }
         .fav-item:hover, .hist-item:hover { box-shadow: var(--shadow-md); }
-        .fav-thumb, .hist-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .fav-item.now-playing, .hist-item.now-playing {
+            border-color: var(--primary);
+            box-shadow: 0 4px 18px rgba(26,82,118,0.18);
+            background: linear-gradient(135deg, #eaf2fb, #fdfefe);
+        }
+        .fav-item.now-playing::before, .hist-item.now-playing::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 4px; background: var(--primary); border-radius: 4px 0 0 4px;
+        }
+        .fav-thumb-wrap, .hist-thumb-wrap { position: relative; flex-shrink: 0; }
+        .fav-thumb, .hist-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; display: block; }
+        .thumb-now-playing {
+            position: absolute; inset: 0; border-radius: 8px;
+            background: rgba(26,82,118,0.72);
+            display: none; align-items: center; justify-content: center;
+        }
+        .fav-item.now-playing .thumb-now-playing,
+        .hist-item.now-playing .thumb-now-playing { display: flex; }
+        .eq-bars { display: flex; align-items: flex-end; gap: 2px; height: 22px; }
+        .eq-bars span {
+            display: block; width: 3px; border-radius: 2px; background: white;
+            animation: eq-anim 0.8s ease-in-out infinite alternate;
+        }
+        .eq-bars span:nth-child(1) { height: 6px; animation-delay: 0s; }
+        .eq-bars span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+        .eq-bars span:nth-child(3) { height: 9px; animation-delay: 0.3s; }
+        .eq-bars span:nth-child(4) { height: 18px; animation-delay: 0.1s; }
+        @keyframes eq-anim { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }
         .fav-info, .hist-info { flex: 1; overflow: hidden; text-align: right; direction: rtl; }
-        .fav-title, .hist-title { font-size: 13px; font-weight: 600; color: var(--text-main); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fav-title, .hist-title {
+            font-size: 13px; font-weight: 600; color: var(--text-main);
+            line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .fav-item.now-playing .fav-title,
+        .hist-item.now-playing .hist-title { color: var(--primary); }
         .fav-scholar, .hist-scholar { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
         .hist-date { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
-        .fav-play-btn, .hist-play-btn { background: var(--primary); color: white; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+        .now-playing-label {
+            font-size: 10px; color: var(--primary); font-weight: bold;
+            display: flex; align-items: center; gap: 3px; margin-top: 4px; direction: ltr;
+        }
+        .now-playing-label i { font-size: 9px; animation: pulse-icon 1s infinite; }
+        @keyframes pulse-icon { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        .fav-play-btn, .hist-play-btn {
+            background: var(--primary); color: white; border: none;
+            width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 13px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s;
+        }
+        .fav-item.now-playing .fav-play-btn,
+        .hist-item.now-playing .hist-play-btn { background: var(--accent); }
         .fav-play-btn:hover, .hist-play-btn:hover { background: var(--primary-dark); }
 
-        /* ===== CONTACT TAB ===== */
-        .contact-about-box {
-            background: white; border-radius: var(--radius-md);
-            padding: 18px; margin-bottom: 16px;
-            box-shadow: var(--shadow-sm); border: 1.5px solid var(--border);
-            text-align: right; direction: rtl;
-        }
+        /* CONTACT */
+        .contact-about-box { background: white; border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1.5px solid var(--border); text-align: right; direction: rtl; }
         .contact-about-box h3 { color: var(--primary); font-size: 16px; margin-bottom: 10px; }
         .contact-about-box p { color: var(--text-main); font-size: 14px; line-height: 1.7; }
-        .contact-notice {
-            background: linear-gradient(135deg, #fff9e6, #fff3cc);
-            border: 1.5px solid #f0c040; border-radius: var(--radius-md);
-            padding: 14px 16px; margin-bottom: 16px;
-            text-align: right; direction: rtl; font-size: 13px; color: #7a5c00;
-        }
+        .contact-notice { background: linear-gradient(135deg, #fff9e6, #fff3cc); border: 1.5px solid #f0c040; border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; text-align: right; direction: rtl; font-size: 13px; color: #7a5c00; }
         .contact-notice i { margin-left: 6px; }
         .contact-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .contact-btn {
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 13px 10px; border-radius: var(--radius-md); border: none;
-            color: white; font-weight: bold; font-size: 13px; cursor: pointer;
-            text-decoration: none; transition: opacity 0.2s, transform 0.2s;
-        }
+        .contact-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 10px; border-radius: var(--radius-md); border: none; color: white; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; transition: opacity 0.2s, transform 0.2s; }
         .contact-btn:hover { opacity: 0.88; transform: scale(1.02); }
         .contact-btn.whatsapp { background: #25d366; }
         .contact-btn.call { background: #2196F3; }
@@ -377,14 +360,16 @@
         .contact-btn.telegram { background: #0088cc; }
         .contact-btn.website { background: var(--primary); grid-column: 1 / -1; }
 
-        /* ===== AUDIO STATES ===== */
-        .audio-state-box { padding: 14px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; }
-        .audio-error-box { text-align: center; color: #ff6b6b; padding: 14px; }
-        .retry-btn { background: var(--accent); border: none; color: white; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-top: 8px; }
+        /* AD SLOTS */
+        .ad-slot {
+            width: 100%; background: #f0f4f8; border: 1.5px dashed #c8d6e5;
+            border-radius: var(--radius-md); margin-bottom: 18px; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; min-height: 60px;
+        }
+        .ad-slot iframe, .ad-slot ins, .ad-slot > * { display: block; width: 100%; }
+        .ad-slot-inline { min-height: 60px; margin: 0 0 16px 0; }
 
-        /* ===== HIDDEN ===== */
         .hidden { display: none !important; }
-
         audio { width: 100%; max-width: 600px; outline: none; }
     </style>
 </head>
@@ -396,8 +381,12 @@
     <h5>Old Bayanat Akabreen Ulama E Deoband</h5>
 </header>
 
-<div class="container">
+<div id="tab-loader-overlay">
+    <div class="spinner"></div>
+    <div class="loader-text">Please Wait...</div>
+</div>
 
+<div class="container">
     <!-- HOME TAB -->
     <div id="tab-home" class="tab-content active">
         <div id="loading-view" class="loader-container">
@@ -405,19 +394,17 @@
             <div class="loader-text">Please Wait...</div>
         </div>
         <div id="home-view" class="hidden">
-            <div class="search-container">
-                <input type="text" id="search-input" class="search-input" placeholder="علما کو تلاش کریں..." oninput="filterScholars()">
-            </div>
+            <div class="ad-slot" id="ad-home-top"><!-- AD CODE HERE --></div>
+            
             <div class="grid" id="folder-container"></div>
+            <div class="ad-slot" id="ad-home-bottom" style="margin-top:18px;"><!-- AD CODE HERE --></div>
         </div>
         <div id="player-view" class="hidden">
             <button class="back-btn" onclick="goHomeExplicit()"><i class="fa fa-arrow-left"></i> Back</button>
+            <div class="ad-slot" id="ad-player-top"><!-- AD CODE HERE --></div>
             <div class="scholar-header-card">
                 <img id="scholar-img" src="" alt="">
                 <h2 id="scholar-name"></h2>
-            </div>
-            <div class="search-container">
-                <input type="text" id="bayan-search-input" class="search-input" placeholder="بیان تلاش کریں..." oninput="filterBayans()">
             </div>
             <div id="track-list"></div>
         </div>
@@ -425,11 +412,13 @@
 
     <!-- FAVORITES TAB -->
     <div id="tab-favorites" class="tab-content">
+        <div class="ad-slot" id="ad-fav-top"><!-- AD CODE HERE --></div>
         <div id="fav-list"></div>
     </div>
 
     <!-- HISTORY TAB -->
     <div id="tab-history" class="tab-content">
+        <div class="ad-slot" id="ad-hist-top"><!-- AD CODE HERE --></div>
         <div id="hist-list"></div>
     </div>
 
@@ -441,46 +430,41 @@
         </div>
         <div id="contact-content" class="hidden"></div>
     </div>
-
-</div><!-- /container -->
+</div>
 
 <!-- MINI PLAYER -->
-<div id="mini-player">
+<div id="mini-player" onclick="openFullPlayer(event)">
     <img id="mini-thumb" src="https://via.placeholder.com/44" alt="">
     <div id="mini-info">
         <div id="mini-title">—</div>
         <div id="mini-scholar">—</div>
     </div>
-    <div class="mini-playing-bars">
-        <span></span><span></span><span></span><span></span>
-    </div>
+    <!-- FIX 2: buffering spinner in mini player -->
+    <div id="mini-loading-spinner"></div>
+    <div class="mini-playing-bars"><span></span><span></span><span></span><span></span></div>
     <button class="mini-btn" id="mini-play-btn" onclick="toggleMiniPlay(event)"><i class="fa fa-pause"></i></button>
     <button class="mini-btn" onclick="openFullPlayer(event)"><i class="fa fa-expand-alt"></i></button>
 </div>
 
-<!-- BOTTOM NAVIGATION -->
+<!-- BOTTOM NAV -->
 <div id="bottom-nav">
     <button class="nav-tab active" data-tab="home" onclick="switchTab('home', this)">
-        <i class="fa fa-home"></i>
-        <span class="nav-tab-label">Home</span>
+        <i class="fa fa-home"></i><span class="nav-tab-label">Home</span>
     </button>
     <button class="nav-tab" data-tab="favorites" onclick="switchTab('favorites', this)">
-        <i class="fa fa-heart"></i>
-        <span class="nav-tab-label">Favorites</span>
+        <i class="fa fa-heart"></i><span class="nav-tab-label">Favorites</span>
     </button>
     <button class="nav-tab" data-tab="history" onclick="switchTab('history', this)">
-        <i class="fa fa-history"></i>
-        <span class="nav-tab-label">History</span>
+        <i class="fa fa-history"></i><span class="nav-tab-label">History</span>
     </button>
     <button class="nav-tab" data-tab="contact" onclick="switchTab('contact', this)">
-        <i class="fa fa-address-book"></i>
-        <span class="nav-tab-label">Contact</span>
+        <i class="fa fa-address-book"></i><span class="nav-tab-label">Contact</span>
     </button>
 </div>
 
 <!-- FULL PLAYER MODAL -->
 <div id="full-player-modal">
-    <div class="full-player-sheet" style="position:relative;">
+    <div class="full-player-sheet">
         <button class="close-fp-btn" onclick="closeFullPlayer()"><i class="fa fa-times"></i></button>
         <div class="full-player-handle"></div>
         <img id="fp-thumb" class="full-player-thumb" src="" alt="">
@@ -492,17 +476,17 @@
             <span class="time-label" id="fp-duration">0:00</span>
         </div>
         <div class="full-player-controls">
-            <button class="fp-btn" onclick="skipAudio(-15)" title="Rewind 15s"><i class="fa fa-rotate-left"></i><span style="font-size:9px;margin-left:1px;">15</span></button>
+            <button class="fp-btn" onclick="skipAudio(-15)"><i class="fa fa-rotate-left"></i><span style="font-size:9px;margin-left:1px;">15</span></button>
             <button class="fp-btn fp-play-btn" id="fp-play-btn" onclick="toggleMiniPlay(event)"><i class="fa fa-pause"></i></button>
-            <button class="fp-btn" onclick="skipAudio(15)" title="Forward 15s"><i class="fa fa-rotate-right"></i><span style="font-size:9px;margin-left:1px;">15</span></button>
+            <button class="fp-btn" onclick="skipAudio(15)"><i class="fa fa-rotate-right"></i><span style="font-size:9px;margin-left:1px;">15</span></button>
         </div>
         <div class="speed-row">
             <span class="speed-label">Speed:</span>
-            <button class="speed-btn" onclick="setSpeed(0.75)">0.75×</button>
-            <button class="speed-btn active" onclick="setSpeed(1)">1×</button>
-            <button class="speed-btn" onclick="setSpeed(1.25)">1.25×</button>
-            <button class="speed-btn" onclick="setSpeed(1.5)">1.5×</button>
-            <button class="speed-btn" onclick="setSpeed(2)">2×</button>
+            <button class="speed-btn" onclick="setSpeed(0.75,this)">0.75×</button>
+            <button class="speed-btn active" onclick="setSpeed(1,this)">1×</button>
+            <button class="speed-btn" onclick="setSpeed(1.25,this)">1.25×</button>
+            <button class="speed-btn" onclick="setSpeed(1.5,this)">1.5×</button>
+            <button class="speed-btn" onclick="setSpeed(2,this)">2×</button>
         </div>
     </div>
 </div>
@@ -520,7 +504,7 @@
 </div>
 
 <script>
-/* ===== FIREBASE CONFIG ===== */
+/* ===== FIREBASE ===== */
 const firebaseConfig = {
     apiKey: "AIzaSyAEItN0OBCInSwzRDeKzWyAqg08mtciQMA",
     authDomain: "bayan-app-7e2fe.firebaseapp.com",
@@ -536,109 +520,219 @@ const database = firebase.database();
 /* ===== STATE ===== */
 let localScholarsData = {};
 let currentTrackUrl = "";
+let currentTrackId = "";
 let currentScholarId = "";
-let currentScholarName = "";
 let currentTrackData = null;
-let activeAudioElement = null;
-let isInternalBack = false;
-let allTracksForFilter = [];
+let currentTab = 'home';
+let contactLoaded = false;
+let downloadClickCount = 0;
+
+/* ===== SINGLE GLOBAL AUDIO ===== */
+const globalAudio = new Audio();
+globalAudio.preload = "auto";
+
+globalAudio.addEventListener('timeupdate', () => {
+    if (!currentTrackUrl) return;
+    try {
+        const key = 'resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl)));
+        localStorage.setItem(key, globalAudio.currentTime);
+    } catch(e) {}
+    if (globalAudio.duration) {
+        const pct = (globalAudio.currentTime / globalAudio.duration) * 100;
+        document.getElementById('fp-progress').value = pct;
+        document.getElementById('fp-current').textContent = formatTime(globalAudio.currentTime);
+        document.getElementById('fp-duration').textContent = formatTime(globalAudio.duration);
+    }
+});
+
+globalAudio.addEventListener('ended', () => {
+    try { localStorage.removeItem('resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl)))); } catch(e) {}
+    document.querySelectorAll('.track-item').forEach(i => i.classList.remove('active-track'));
+    setPlayingUI(false);
+    updateListNowPlaying('');
+});
+
+globalAudio.addEventListener('error', () => {
+    setBuffering(false);
+    document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
+    document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
+});
+
+/* FIX 2: buffering events */
+globalAudio.addEventListener('waiting', () => { setBuffering(true); });
+globalAudio.addEventListener('playing', () => { setBuffering(false); });
+globalAudio.addEventListener('canplay', () => { setBuffering(false); });
+
+function setBuffering(isBuffering) {
+    const miniPlayer = document.getElementById('mini-player');
+    if (isBuffering) {
+        miniPlayer.classList.add('buffering');
+    } else {
+        miniPlayer.classList.remove('buffering');
+    }
+}
+
+/* ===== PLAY/PAUSE UI HELPERS ===== */
+function setPlayingUI(isPlaying) {
+    const miniPlayer = document.getElementById('mini-player');
+    if (isPlaying) {
+        miniPlayer.classList.remove('paused');
+        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+    } else {
+        miniPlayer.classList.add('paused');
+        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+    }
+    document.querySelectorAll('.eq-bars').forEach(el => {
+        el.querySelectorAll('span').forEach(s => {
+            s.style.animationPlayState = isPlaying ? 'running' : 'paused';
+        });
+    });
+}
+
+function updateListNowPlaying(trackId) {
+    document.querySelectorAll('.fav-item').forEach(item => {
+        const tid = item.dataset.trackid;
+        item.classList.toggle('now-playing', tid === trackId && tid !== '');
+        const btn = item.querySelector('.fav-play-btn i');
+        if (btn) btn.className = (tid === trackId && tid !== '') ? 'fa fa-volume-up' : 'fa fa-play';
+    });
+    document.querySelectorAll('.hist-item').forEach(item => {
+        const tid = item.dataset.trackid;
+        item.classList.toggle('now-playing', tid === trackId && tid !== '');
+        const btn = item.querySelector('.hist-play-btn i');
+        if (btn) btn.className = (tid === trackId && tid !== '') ? 'fa fa-volume-up' : 'fa fa-play';
+    });
+}
+
+/* ===== TAB LOADER ===== */
+function showTabLoader(callback, delay) {
+    const overlay = document.getElementById('tab-loader-overlay');
+    overlay.classList.add('show');
+    setTimeout(() => { overlay.classList.remove('show'); if (callback) callback(); }, delay || 900);
+}
 
 /* ===== TAB NAVIGATION ===== */
 function switchTab(tabName, el) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + tabName).classList.add('active');
-    el.classList.add('active');
-    if (tabName === 'favorites') renderFavorites();
-    if (tabName === 'history') renderHistory();
-    if (tabName === 'contact') loadContact();
+    showTabLoader(() => {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        el.classList.add('active');
+        currentTab = tabName;
+        if (tabName === 'home') {
+            document.getElementById('player-view').classList.add('hidden');
+            document.getElementById('home-view').classList.remove('hidden');
+            document.getElementById('loading-view').style.display = 'none';
+            displayScholars(localScholarsData);
+            window.history.pushState({ page: 'home' }, '');
+        }
+        if (tabName === 'favorites') renderFavorites();
+        if (tabName === 'history') renderHistory();
+        if (tabName === 'contact') loadContact();
+    }, 900);
 }
 
-/* ===== DATA LOADING ===== */
+/* ===== BACK BUTTON ===== */
+window.addEventListener('popstate', (e) => {
+    if (document.getElementById('full-player-modal').classList.contains('open')) {
+        closeFullPlayer();
+        window.history.pushState({ page: currentTab }, '');
+        return;
+    }
+    if (!document.getElementById('player-view').classList.contains('hidden')) {
+        goHome();
+        window.history.pushState({ page: 'home' }, '');
+        return;
+    }
+    if (currentTab !== 'home') {
+        const homeBtn = document.querySelector('.nav-tab[data-tab="home"]');
+        showTabLoader(() => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-home').classList.add('active');
+            homeBtn.classList.add('active');
+            currentTab = 'home';
+            document.getElementById('player-view').classList.add('hidden');
+            document.getElementById('home-view').classList.remove('hidden');
+            document.getElementById('loading-view').style.display = 'none';
+            displayScholars(localScholarsData);
+        }, 900);
+        window.history.pushState({ page: 'home' }, '');
+        return;
+    }
+    window.history.pushState({ page: 'home' }, '');
+});
+
+/* ===== DATA ===== */
 function loadData() {
     database.ref('scholars').on('value', (snapshot) => {
-        const data = snapshot.val();
-        localScholarsData = data || {};
+        localScholarsData = snapshot.val() || {};
         displayScholars(localScholarsData);
         document.getElementById('loading-view').style.display = 'none';
         document.getElementById('home-view').classList.remove('hidden');
         tryResumePlayback();
+        window.history.replaceState({ page: 'home' }, '');
     });
 }
 
-/* ===== SCHOLAR DISPLAY ===== */
+function getSortedKeys(data) {
+    return Object.keys(data).sort((a, b) => {
+        const posA = (data[a].position !== null && data[a].position !== undefined) ? data[a].position : 9999;
+        const posB = (data[b].position !== null && data[b].position !== undefined) ? data[b].position : 9999;
+        return posA - posB;
+    });
+}
+
 function displayScholars(data) {
     const container = document.getElementById('folder-container');
     container.innerHTML = "";
     const keys = Object.keys(data);
-    if (keys.length === 0) {
-        container.innerHTML = "<p style='text-align:center; grid-column: span 2; color: gray; margin-top:40px;'>کوئی ریکارڈ نہیں ملا۔</p>";
+    if (!keys.length) {
+        container.innerHTML = "<p style='text-align:center;grid-column:span 2;color:gray;margin-top:40px;'>کوئی ریکارڈ نہیں ملا۔</p>";
         return;
     }
-    keys.sort((a, b) => {
-        const posA = data[a].position !== undefined ? data[a].position : 999;
-        const posB = data[b].position !== undefined ? data[b].position : 999;
-        return posA - posB;
-    });
-    keys.forEach(id => {
+    const sortedKeys = getSortedKeys(data);
+    sortedKeys.forEach((id, idx) => {
         const s = data[id];
-        const totalTracks = s.tracks ? Object.keys(s.tracks).length : 0;
+        const total = s.tracks ? Object.keys(s.tracks).length : 0;
         container.innerHTML += `
-            <div class="card" data-name="${escapeHtml(s.name)}" onclick="openScholar('${id}')">
-                <span class="bayan-count-badge">${totalTracks} بیان</span>
-                <img src="${s.img || 'https://via.placeholder.com/300x155'}" alt="${escapeHtml(s.name)}" loading="lazy">
+            <div class="card" onclick="openScholar('${id}')">
+                <span class="bayan-count-badge">${total} بیان</span>
+                <img src="${s.img||'https://via.placeholder.com/300x155'}" alt="${escapeHtml(s.name)}" loading="lazy">
                 <h3>${escapeHtml(s.name)}</h3>
             </div>`;
+        if ((idx+1) % 4 === 0) {
+            container.innerHTML += `<div class="ad-slot ad-slot-inline" style="grid-column:span 2;"><!-- AD CODE HERE --></div>`;
+        }
     });
 }
 
-function filterScholars() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim();
-    const filtered = {};
-    Object.keys(localScholarsData).forEach(id => {
-        if (localScholarsData[id].name.toLowerCase().includes(query)) filtered[id] = localScholarsData[id];
-    });
-    displayScholars(filtered);
-}
-
-/* ===== SCHOLAR DETAIL / PLAYER VIEW ===== */
+/* ===== SCHOLAR DETAIL ===== */
 function openScholar(id) {
     const scholar = localScholarsData[id];
     if (!scholar) return;
     currentScholarId = id;
-    currentScholarName = scholar.name;
-
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('loading-view').style.display = 'flex';
-
     setTimeout(() => {
         document.getElementById('loading-view').style.display = 'none';
         document.getElementById('player-view').classList.remove('hidden');
         document.getElementById('scholar-name').innerText = scholar.name;
         document.getElementById('scholar-img').src = scholar.img || 'https://via.placeholder.com/150';
-        document.getElementById('bayan-search-input').value = '';
-
         buildTrackList(scholar);
         window.history.pushState({ page: 'player' }, '');
     }, 800);
 }
 
 function buildTrackList(scholar) {
-    const list = document.getElementById('track-list');
-    list.innerHTML = "";
-    allTracksForFilter = [];
-
     if (!scholar.tracks) {
-        list.innerHTML = "<p style='text-align:center; color:var(--text-muted); font-weight:bold; margin-top:30px;'>کوئی بیان موجود نہیں ہے۔</p>";
+        document.getElementById('track-list').innerHTML = "<p style='text-align:center;color:var(--text-muted);font-weight:bold;margin-top:30px;'>کوئی بیان موجود نہیں ہے۔</p>";
         return;
     }
-
-    const trackKeys = Object.keys(scholar.tracks).reverse();
-    trackKeys.forEach((trackId, index) => {
-        const t = scholar.tracks[trackId];
-        allTracksForFilter.push({ trackId, t });
-    });
-    renderTrackList(allTracksForFilter, scholar);
+    const tracksArray = Object.keys(scholar.tracks).reverse().map(trackId => ({ trackId, t: scholar.tracks[trackId] }));
+    renderTrackList(tracksArray, scholar);
 }
 
 function renderTrackList(items, scholar) {
@@ -646,177 +740,146 @@ function renderTrackList(items, scholar) {
     list.innerHTML = "";
     const s = scholar || localScholarsData[currentScholarId];
     if (!s) return;
-
     items.forEach(({ trackId, t }, index) => {
-        const durationText = t.duration ? `⏱️ ${t.duration}` : '';
+        const dur = t.duration ? `⏱️ ${t.duration}` : '';
         const isActive = (currentTrackUrl === t.file) ? 'active-track' : '';
         const isFav = isFavorite(trackId);
         list.innerHTML += `
-            <div class="track-item ${isActive}" data-file="${t.file}" data-trackid="${trackId}" onclick="playAudio('${t.file}', this, '${trackId}', '${escapeAttr(t.title)}', '${escapeAttr(t.thumb || '')}', '${escapeAttr(s.name)}')">
+            <div class="track-item ${isActive}" data-file="${t.file}" data-trackid="${trackId}"
+                onclick="playAudio('${escapeAttr(t.file)}', this, '${trackId}', '${escapeAttr(t.title)}', '${escapeAttr(t.thumb||'')}', '${escapeAttr(s.name)}')">
                 <div class="thumb-container">
-                    <span class="track-number-badge">${index + 1}</span>
-                    <img src="${t.thumb || 'https://via.placeholder.com/640x320'}" alt="" loading="lazy">
+                    <span class="track-number-badge">${index+1}</span>
+                    <img src="${t.thumb||'https://via.placeholder.com/640x320'}" alt="" loading="lazy">
                     <div class="now-playing-overlay">▶ Now Playing</div>
                 </div>
                 <div class="track-details">
                     <p class="track-title">${escapeHtml(t.title)}</p>
                     <div class="track-meta">
                         <div class="track-actions" onclick="event.stopPropagation()">
-                            <button class="track-action-btn fav-btn ${isFav ? 'favorited' : ''}" 
-                                onclick="toggleFavorite('${trackId}', '${escapeAttr(t.title)}', '${escapeAttr(t.thumb || '')}', '${escapeAttr(t.file)}', '${escapeAttr(s.name)}', this)"
-                                title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}">
-                                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                            <button class="track-action-btn fav-btn ${isFav?'favorited':''}"
+                                onclick="toggleFavorite('${trackId}','${escapeAttr(t.title)}','${escapeAttr(t.thumb||'')}','${escapeAttr(t.file)}','${escapeAttr(s.name)}',this)">
+                                <i class="${isFav?'fa-solid':'fa-regular'} fa-heart"></i>
                             </button>
-                            <button class="track-action-btn" onclick="shareBayan('${escapeAttr(t.title)}', '${escapeAttr(t.file)}')" title="Share">
+                            <button class="track-action-btn" onclick="shareBayan('${escapeAttr(t.title)}','${escapeAttr(t.file)}')">
                                 <i class="fa-solid fa-share-nodes"></i>
                             </button>
-                            <button class="track-action-btn" onclick="downloadBayan('${escapeAttr(t.file)}', '${escapeAttr(t.title)}')" title="Download">
+                            <button class="track-action-btn" onclick="maybeAdThenDownload('${escapeAttr(t.file)}','${escapeAttr(t.title)}')">
                                 <i class="fa-solid fa-download"></i>
                             </button>
                         </div>
-                        <p class="track-duration">${durationText}</p>
+                        <p class="track-duration">${dur}</p>
                     </div>
                 </div>
             </div>`;
+        if ((index+1) % 5 === 0) {
+            list.innerHTML += `<div class="ad-slot ad-slot-inline" id="ad-track-${index}"><!-- AD CODE HERE --></div>`;
+        }
     });
-}
-
-function filterBayans() {
-    const query = document.getElementById('bayan-search-input').value.toLowerCase().trim();
-    const scholar = localScholarsData[currentScholarId];
-    if (!scholar) return;
-    const filtered = allTracksForFilter.filter(({ t }) => t.title.toLowerCase().includes(query));
-    renderTrackList(filtered, scholar);
 }
 
 /* ===== AUDIO PLAYER ===== */
 function playAudio(file, element, trackId, title, thumb, scholarName) {
-    currentTrackUrl = file;
+    globalAudio.pause();
+    globalAudio.src = '';
 
-    // Update mini player info
+    currentTrackUrl = file;
+    currentTrackId = trackId;
+
     document.getElementById('mini-thumb').src = thumb || 'https://via.placeholder.com/44';
     document.getElementById('mini-title').textContent = title;
     document.getElementById('mini-scholar').textContent = scholarName;
-
-    // Update full player info
     document.getElementById('fp-thumb').src = thumb || 'https://via.placeholder.com/640x320';
     document.getElementById('fp-title').textContent = title;
     document.getElementById('fp-scholar').textContent = scholarName;
 
-    // Mark active track
-    document.querySelectorAll('.track-item').forEach(item => item.classList.remove('active-track'));
+    document.querySelectorAll('.track-item').forEach(i => i.classList.remove('active-track'));
     if (element) element.classList.add('active-track');
 
-    // Stop previous audio
-    if (activeAudioElement) {
-        activeAudioElement.pause();
-        activeAudioElement = null;
-    }
-
-    // Show mini player
     document.getElementById('mini-player').classList.add('visible');
-    document.getElementById('mini-player').classList.remove('paused');
-    document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
-    document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+    setPlayingUI(true);
+    setBuffering(true); /* FIX 2: show spinner immediately on new track */
+    updateListNowPlaying(trackId);
 
-    // Determine if direct audio
-    const isDirectAudio = /\.(mp3|wav|ogg|m4a|aac)(\?|$)/i.test(file) || file.includes('/Lectures/');
+    globalAudio.src = file;
+    globalAudio.load();
 
-    if (isDirectAudio) {
-        const audio = new Audio(file);
-        audio.preload = "auto";
-        activeAudioElement = audio;
-
-        // Resume logic
-        const savedTime = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(file))));
-        if (savedTime) {
-            audio.addEventListener('loadedmetadata', () => {
-                audio.currentTime = parseFloat(savedTime);
-                audio.play().catch(() => {});
+    let resumed = false;
+    try {
+        const saved = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(file))));
+        if (saved && parseFloat(saved) > 2) {
+            globalAudio.addEventListener('loadedmetadata', () => {
+                globalAudio.currentTime = parseFloat(saved);
+                globalAudio.play().catch(() => {});
             }, { once: true });
-        } else {
-            audio.play().catch(() => {});
+            resumed = true;
         }
+    } catch(e) {}
 
-        // Progress updates
-        audio.addEventListener('timeupdate', () => {
-            const key = 'resume_' + btoa(unescape(encodeURIComponent(file)));
-            localStorage.setItem(key, audio.currentTime);
-            // Save resume data
-            localStorage.setItem('last_resume', JSON.stringify({ file, currentTime: audio.currentTime, scholarId: currentScholarId, trackId }));
-            // Update progress bar
-            if (audio.duration) {
-                const pct = (audio.currentTime / audio.duration) * 100;
-                document.getElementById('fp-progress').value = pct;
-                document.getElementById('fp-current').textContent = formatTime(audio.currentTime);
-                document.getElementById('fp-duration').textContent = formatTime(audio.duration);
-            }
+    if (!resumed) {
+        globalAudio.play().catch(() => {
+            globalAudio.addEventListener('canplay', () => {
+                globalAudio.play().catch(() => {});
+            }, { once: true });
         });
-
-        audio.addEventListener('ended', () => {
-            localStorage.removeItem('resume_' + btoa(unescape(encodeURIComponent(file))));
-            document.querySelectorAll('.track-item').forEach(i => i.classList.remove('active-track'));
-            document.getElementById('mini-player').classList.add('paused');
-            document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-play"></i>';
-            document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-play"></i>';
-        });
-
-        audio.addEventListener('error', () => {
-            document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
-        });
-
-        audio.addEventListener('waiting', () => {
-            document.getElementById('mini-playing-state').innerHTML = 'Buffering...';
-        });
-
-    } else {
-        // Iframe-based (non-direct audio)
-        activeAudioElement = null;
     }
 
-    // Save to history
     saveHistory({ file, title, thumb, scholarName, trackId });
-
-    // Store current track data for full player
     currentTrackData = { file, title, thumb, scholarName, trackId };
-
-    // Persist resume info
-    localStorage.setItem('last_resume', JSON.stringify({
-        file, currentTime: 0, scholarId: currentScholarId, trackId, title, thumb, scholarName
-    }));
+    try {
+        localStorage.setItem('last_resume', JSON.stringify({ file, currentTime: 0, scholarId: currentScholarId, trackId, title, thumb, scholarName }));
+    } catch(e) {}
 }
 
 function toggleMiniPlay(event) {
     if (event) event.stopPropagation();
-    if (!activeAudioElement) return;
-    const miniPlayer = document.getElementById('mini-player');
-    if (activeAudioElement.paused) {
-        activeAudioElement.play().catch(() => {});
-        miniPlayer.classList.remove('paused');
-        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
-        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+    if (!globalAudio.src) return;
+
+    /* FIX 1: if audio has no src loaded yet (resume state), load and play */
+    if (globalAudio.src && globalAudio.readyState === 0 && currentTrackUrl) {
+        setBuffering(true);
+        setPlayingUI(true);
+        globalAudio.src = currentTrackUrl;
+        globalAudio.load();
+        try {
+            const saved = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl))));
+            if (saved && parseFloat(saved) > 2) {
+                globalAudio.addEventListener('loadedmetadata', () => {
+                    globalAudio.currentTime = parseFloat(saved);
+                    globalAudio.play().catch(() => {});
+                }, { once: true });
+                return;
+            }
+        } catch(e) {}
+        globalAudio.play().catch(() => {
+            globalAudio.addEventListener('canplay', () => { globalAudio.play().catch(() => {}); }, { once: true });
+        });
+        return;
+    }
+
+    if (globalAudio.paused) {
+        globalAudio.play().catch(() => {});
+        setPlayingUI(true);
+        updateListNowPlaying(currentTrackId);
     } else {
-        activeAudioElement.pause();
-        miniPlayer.classList.add('paused');
-        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-play"></i>';
-        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+        globalAudio.pause();
+        setPlayingUI(false);
     }
 }
 
 function seekAudio(value) {
-    if (!activeAudioElement || !activeAudioElement.duration) return;
-    activeAudioElement.currentTime = (value / 100) * activeAudioElement.duration;
+    if (!globalAudio.duration) return;
+    globalAudio.currentTime = (value / 100) * globalAudio.duration;
 }
 
 function skipAudio(seconds) {
-    if (!activeAudioElement) return;
-    activeAudioElement.currentTime = Math.max(0, Math.min(activeAudioElement.duration, activeAudioElement.currentTime + seconds));
+    if (!globalAudio.src) return;
+    globalAudio.currentTime = Math.max(0, Math.min(globalAudio.duration || 0, globalAudio.currentTime + seconds));
 }
 
-function setSpeed(speed) {
-    if (activeAudioElement) activeAudioElement.playbackRate = speed;
+function setSpeed(speed, btn) {
+    globalAudio.playbackRate = speed;
     document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
+    if (btn) btn.classList.add('active');
 }
 
 function formatTime(secs) {
@@ -826,10 +889,11 @@ function formatTime(secs) {
     return `${m}:${s}`;
 }
 
-/* ===== FULL PLAYER MODAL ===== */
+/* ===== FULL PLAYER ===== */
 function openFullPlayer(event) {
     if (event) event.stopPropagation();
     document.getElementById('full-player-modal').classList.add('open');
+    window.history.pushState({ page: 'fullplayer' }, '');
 }
 function closeFullPlayer() {
     document.getElementById('full-player-modal').classList.remove('open');
@@ -838,12 +902,11 @@ document.getElementById('full-player-modal').addEventListener('click', function(
     if (e.target === this) closeFullPlayer();
 });
 
-/* ===== RESUME PLAYBACK ===== */
+/* ===== RESUME (FIX 1: restore src so mini player click works) ===== */
 function tryResumePlayback() {
     try {
         const data = JSON.parse(localStorage.getItem('last_resume') || 'null');
         if (!data || !data.file) return;
-        // Just restore mini player display without auto-playing
         document.getElementById('mini-thumb').src = data.thumb || 'https://via.placeholder.com/44';
         document.getElementById('mini-title').textContent = data.title || '—';
         document.getElementById('mini-scholar').textContent = data.scholarName || '—';
@@ -851,12 +914,21 @@ function tryResumePlayback() {
         document.getElementById('fp-title').textContent = data.title || '';
         document.getElementById('fp-scholar').textContent = data.scholarName || '';
         currentTrackUrl = data.file;
+        currentTrackId = data.trackId || '';
         currentScholarId = data.scholarId || '';
         currentTrackData = data;
-        // Show mini player in paused state
-        document.getElementById('mini-player').classList.add('visible', 'paused');
-        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-play"></i>';
-        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+        /* FIX 1: set audio src so readyState > 0 is not needed; keep paused */
+        globalAudio.src = data.file;
+        try {
+            const saved = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(data.file))));
+            if (saved && parseFloat(saved) > 2) {
+                globalAudio.addEventListener('loadedmetadata', () => {
+                    globalAudio.currentTime = parseFloat(saved);
+                }, { once: true });
+            }
+        } catch(e) {}
+        document.getElementById('mini-player').classList.add('visible');
+        setPlayingUI(false);
     } catch(e) {}
 }
 
@@ -864,32 +936,18 @@ function tryResumePlayback() {
 function goHome() {
     document.getElementById('player-view').classList.add('hidden');
     document.getElementById('loading-view').style.display = 'flex';
-    document.getElementById('search-input').value = "";
-    document.getElementById('bayan-search-input').value = "";
     setTimeout(() => {
         document.getElementById('loading-view').style.display = 'none';
         document.getElementById('home-view').classList.remove('hidden');
         displayScholars(localScholarsData);
     }, 600);
 }
-
-function goHomeExplicit() {
-    isInternalBack = true;
-    window.history.back();
-}
-
-window.addEventListener('popstate', () => {
-    if (!document.getElementById('player-view').classList.contains('hidden')) {
-        goHome();
-    }
-});
+function goHomeExplicit() { window.history.back(); }
 
 /* ===== FAVORITES ===== */
-function getFavorites() {
-    try { return JSON.parse(localStorage.getItem('ud_favorites') || '[]'); } catch(e) { return []; }
-}
-function saveFavorites(favs) { localStorage.setItem('ud_favorites', JSON.stringify(favs)); }
-function isFavorite(trackId) { return getFavorites().some(f => f.trackId === trackId); }
+function getFavorites() { try { return JSON.parse(localStorage.getItem('ud_favorites')||'[]'); } catch(e) { return []; } }
+function saveFavorites(f) { localStorage.setItem('ud_favorites', JSON.stringify(f)); }
+function isFavorite(id) { return getFavorites().some(f => f.trackId === id); }
 
 function toggleFavorite(trackId, title, thumb, file, scholarName, btn) {
     let favs = getFavorites();
@@ -909,68 +967,88 @@ function toggleFavorite(trackId, title, thumb, file, scholarName, btn) {
 function renderFavorites() {
     const favs = getFavorites();
     const el = document.getElementById('fav-list');
-    if (favs.length === 0) {
+    if (!favs.length) {
         el.innerHTML = `<div class="fav-empty"><i class="fa-regular fa-heart"></i><p>ابھی کوئی پسندیدہ بیان نہیں ہے۔<br>بیانات پر دل کا نشان دبائیں۔</p></div>`;
         return;
     }
     el.innerHTML = '';
     favs.forEach(f => {
+        const isNP = (f.trackId === currentTrackId && currentTrackId !== '');
         el.innerHTML += `
-            <div class="fav-item" onclick="playFromList('${escapeAttr(f.file)}', '${escapeAttr(f.title)}', '${escapeAttr(f.thumb)}', '${escapeAttr(f.scholarName)}', '${f.trackId}')">
-                <img class="fav-thumb" src="${f.thumb || 'https://via.placeholder.com/56'}" alt="" loading="lazy">
+            <div class="fav-item ${isNP?'now-playing':''}" data-trackid="${f.trackId}"
+                onclick="playFromList('${escapeAttr(f.file)}','${escapeAttr(f.title)}','${escapeAttr(f.thumb)}','${escapeAttr(f.scholarName)}','${f.trackId}')">
+                <div class="fav-thumb-wrap">
+                    <img class="fav-thumb" src="${f.thumb||'https://via.placeholder.com/56'}" alt="" loading="lazy">
+                    <div class="thumb-now-playing">
+                        <div class="eq-bars"><span></span><span></span><span></span><span></span></div>
+                    </div>
+                </div>
                 <div class="fav-info">
                     <div class="fav-title">${escapeHtml(f.title)}</div>
                     <div class="fav-scholar">${escapeHtml(f.scholarName)}</div>
+                    ${isNP ? '<div class="now-playing-label"><i class="fa fa-circle"></i> Now Playing</div>' : ''}
                 </div>
-                <button class="fav-play-btn" onclick="playFromList('${escapeAttr(f.file)}', '${escapeAttr(f.title)}', '${escapeAttr(f.thumb)}', '${escapeAttr(f.scholarName)}', '${f.trackId}'); event.stopPropagation();">
-                    <i class="fa fa-play"></i>
+                <button class="fav-play-btn" onclick="playFromList('${escapeAttr(f.file)}','${escapeAttr(f.title)}','${escapeAttr(f.thumb)}','${escapeAttr(f.scholarName)}','${f.trackId}'); event.stopPropagation();">
+                    <i class="${isNP?'fa fa-volume-up':'fa fa-play'}"></i>
                 </button>
             </div>`;
     });
+    if (globalAudio.paused) {
+        document.querySelectorAll('.eq-bars span').forEach(s => s.style.animationPlayState = 'paused');
+    }
 }
 
 /* ===== HISTORY ===== */
-function getHistory() {
-    try { return JSON.parse(localStorage.getItem('ud_history') || '[]'); } catch(e) { return []; }
-}
+function getHistory() { try { return JSON.parse(localStorage.getItem('ud_history')||'[]'); } catch(e) { return []; } }
 function saveHistory(track) {
-    let hist = getHistory().filter(h => h.file !== track.file);
-    hist.unshift({ ...track, playedAt: Date.now() });
-    hist = hist.slice(0, 10);
-    localStorage.setItem('ud_history', JSON.stringify(hist));
+    let h = getHistory().filter(x => x.file !== track.file);
+    h.unshift({ ...track, playedAt: Date.now() });
+    localStorage.setItem('ud_history', JSON.stringify(h.slice(0,10)));
 }
 
 function renderHistory() {
     const hist = getHistory();
     const el = document.getElementById('hist-list');
-    if (hist.length === 0) {
+    if (!hist.length) {
         el.innerHTML = `<div class="history-empty"><i class="fa fa-history"></i><p>ابھی کوئی سننے کی تاریخ نہیں ہے۔<br>بیانات سنیں اور یہاں محفوظ ہوں گے۔</p></div>`;
         return;
     }
     el.innerHTML = '';
     hist.forEach(h => {
-        const date = new Date(h.playedAt).toLocaleDateString('ur-PK', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const date = new Date(h.playedAt).toLocaleDateString('ur-PK', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+        const isNP = (h.trackId === currentTrackId && currentTrackId !== '');
         el.innerHTML += `
-            <div class="hist-item" onclick="playFromList('${escapeAttr(h.file)}', '${escapeAttr(h.title)}', '${escapeAttr(h.thumb)}', '${escapeAttr(h.scholarName)}', '${h.trackId}')">
-                <img class="hist-thumb" src="${h.thumb || 'https://via.placeholder.com/56'}" alt="" loading="lazy">
+            <div class="hist-item ${isNP?'now-playing':''}" data-trackid="${h.trackId}"
+                onclick="playFromList('${escapeAttr(h.file)}','${escapeAttr(h.title)}','${escapeAttr(h.thumb)}','${escapeAttr(h.scholarName)}','${h.trackId}')">
+                <div class="hist-thumb-wrap">
+                    <img class="hist-thumb" src="${h.thumb||'https://via.placeholder.com/56'}" alt="" loading="lazy">
+                    <div class="thumb-now-playing">
+                        <div class="eq-bars"><span></span><span></span><span></span><span></span></div>
+                    </div>
+                </div>
                 <div class="hist-info">
                     <div class="hist-title">${escapeHtml(h.title)}</div>
                     <div class="hist-scholar">${escapeHtml(h.scholarName)}</div>
                     <div class="hist-date"><i class="fa fa-clock"></i> ${date}</div>
+                    ${isNP ? '<div class="now-playing-label"><i class="fa fa-circle"></i> Now Playing</div>' : ''}
                 </div>
-                <button class="hist-play-btn" onclick="playFromList('${escapeAttr(h.file)}', '${escapeAttr(h.title)}', '${escapeAttr(h.thumb)}', '${escapeAttr(h.scholarName)}', '${h.trackId}'); event.stopPropagation();">
-                    <i class="fa fa-play"></i>
+                <button class="hist-play-btn" onclick="playFromList('${escapeAttr(h.file)}','${escapeAttr(h.title)}','${escapeAttr(h.thumb)}','${escapeAttr(h.scholarName)}','${h.trackId}'); event.stopPropagation();">
+                    <i class="${isNP?'fa fa-volume-up':'fa fa-play'}"></i>
                 </button>
             </div>`;
     });
+    if (globalAudio.paused) {
+        document.querySelectorAll('.eq-bars span').forEach(s => s.style.animationPlayState = 'paused');
+    }
 }
 
 function playFromList(file, title, thumb, scholarName, trackId) {
     playAudio(file, null, trackId, title, thumb, scholarName);
+    if (currentTab === 'favorites') setTimeout(renderFavorites, 100);
+    if (currentTab === 'history') setTimeout(renderHistory, 100);
 }
 
-/* ===== CONTACT TAB ===== */
-let contactLoaded = false;
+/* ===== CONTACT ===== */
 function loadContact() {
     if (contactLoaded) return;
     database.ref('settings').once('value', (snap) => {
@@ -1002,64 +1080,51 @@ function loadContact() {
 
 /* ===== SHARE & DOWNLOAD ===== */
 function shareBayan(title, file) {
-    if (navigator.share) {
-        navigator.share({ title: title, text: title, url: file }).catch(() => {});
-    } else {
-        copyToClipboard(file);
-        alert('لنک کاپی ہو گیا!');
-    }
+    if (navigator.share) { navigator.share({ title, text: title, url: file }).catch(() => {}); }
+    else { copyToClipboard(file); alert('لنک کاپی ہو گیا!'); }
 }
-
+function maybeAdThenDownload(file, title) {
+    downloadClickCount++;
+    if (downloadClickCount % 3 === 0) {
+        const adUrl = 'YOUR_AD_DIRECT_LINK_HERE';
+        if (adUrl && adUrl !== 'YOUR_AD_DIRECT_LINK_HERE') window.open(adUrl, '_blank');
+        setTimeout(() => downloadBayan(file, title), 400);
+    } else { downloadBayan(file, title); }
+}
 function downloadBayan(file, title) {
     const a = document.createElement('a');
-    a.href = file;
-    a.download = (title || 'bayan') + '.mp3';
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = file; a.download = (title||'bayan')+'.mp3'; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
-
 function copyToClipboard(text) {
     const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
 }
 
 /* ===== REQUEST MODAL ===== */
 function toggleModal(show) {
-    const modal = document.getElementById('requestModal');
-    modal.classList.toggle('open', show);
-    if (!show) document.getElementById('req-message').value = "";
+    document.getElementById('requestModal').classList.toggle('open', show);
+    if (!show) document.getElementById('req-message').value = '';
 }
-
 function submitRequest() {
-    const msgText = document.getElementById('req-message').value.trim();
-    if (!msgText) { alert("براہ کرم بیان کی تفصیلات لکھیں!"); return; }
-    const finalMessage = `📢 New Bayan Request\n📝 Details: ${msgText}`;
+    const msg = document.getElementById('req-message').value.trim();
+    if (!msg) { alert('براہ کرم بیان کی تفصیلات لکھیں!'); return; }
     database.ref('messages').push({
-        message: finalMessage,
+        message: `📢 New Bayan Request\n📝 Details: ${msg}`,
         timestamp: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        alert("آپ کی درخواست کامیابی سے بھیج دی گئی ہے!");
-        toggleModal(false);
-    }).catch(err => {
-        alert("درخواست بھیجنے میں خرابی آئی۔ دوبارہ کوشش کریں۔");
-        console.error(err);
-    });
+    }).then(() => { alert('آپ کی درخواست کامیابی سے بھیج دی گئی ہے!'); toggleModal(false); })
+    .catch(() => alert('درخواست بھیجنے میں خرابی آئی۔ دوبارہ کوشش کریں۔'));
 }
 
-/* ===== UTILITIES ===== */
+/* ===== UTILS ===== */
 function escapeHtml(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function escapeAttr(str) {
     if (!str) return '';
-    return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+    return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/\n/g,' ');
 }
 
 /* ===== INIT ===== */
