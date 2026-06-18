@@ -2,106 +2,390 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Islamic Bayan Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a5276">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>ULAMA_E_DEOBAND</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding-bottom: 120px; color: #333; }
-        header { background: linear-gradient(135deg, #1a5276, #2980b9); color: white; padding: 20px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
-        header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
-        header h5 { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; font-weight: 400; }
-        
-        /* Bayan Request Button Styling */
+        /* ===== CSS RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #1a5276;
+            --primary-light: #2980b9;
+            --primary-dark: #154360;
+            --accent: #e67e22;
+            --accent-dark: #d35400;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #eef2f5;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --nav-h: 64px;
+            --mini-player-h: 64px;
+            --header-h: 70px;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: calc(var(--nav-h) + var(--mini-player-h) + 8px);
+            overflow-x: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 16px 15px 14px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 { font-size: 22px; letter-spacing: 1px; font-weight: 700; }
+        header h5 { margin-top: 3px; font-size: 12px; opacity: 0.85; font-weight: 400; }
         .request-btn {
-            position: absolute; top: 22px; left: 15px; background: #e67e22; color: white;
-            border: none; padding: 8px 14px; border-radius: 20px; font-size: 12px;
-            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.2); transition: 0.2s;
+            position: absolute; top: 18px; left: 15px;
+            background: var(--accent); color: white;
+            border: none; padding: 8px 13px; border-radius: 20px; font-size: 12px;
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2); transition: all 0.2s;
         }
-        .request-btn:hover { background: #d35400; transform: scale(1.05); }
+        .request-btn:hover { background: var(--accent-dark); transform: scale(1.04); }
         @media(max-width: 480px) {
-            header { padding-top: 55px; }
-            .request-btn { top: 12px; left: 50%; transform: translateX(-50%); }
-            .request-btn:hover { transform: translateX(-50%) scale(1.05); }
+            header { padding-top: 50px; }
+            .request-btn { top: 10px; left: 50%; transform: translateX(-50%); }
+            .request-btn:hover { transform: translateX(-50%) scale(1.04); }
         }
 
-        .container { padding: 20px; max-width: 600px; margin: auto; position: relative; }
-        
-        /* Search Bar Styling */
-        .search-container { margin-bottom: 20px; display: flex; }
-        .search-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; transition: border-color 0.3s; text-align: right; direction: rtl; }
-        .search-input:focus { border-color: #1a5276; box-shadow: 0 0 5px rgba(26,82,118,0.2); }
+        /* ===== LAYOUT ===== */
+        .container { padding: 18px; max-width: 640px; margin: auto; }
 
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        
-        /* Scholar Card Box with Badge */
-        .card { background: white; border-radius: 15px; padding: 12px; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; position: relative; border: 1px solid #eef2f5; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
-        .card img { width: 100%; height: 160px; border-radius: 10px; object-fit: cover; }
-        .card h3 { margin: 12px 0 5px 0; font-size: 16px; color: #2c3e50; font-weight: bold; }
-        
-        /* Bayan Count Badge */
-        .bayan-count-badge { position: absolute; top: 18px; left: 18px; background: rgba(26, 82, 118, 0.9); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; direction: rtl; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        /* Full Size Track/Bayan Item */
-        .track-item { background: white; margin-bottom: 20px; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #eef2f5; transition: transform 0.2s; position: relative; }
-        .track-item:hover { transform: scale(1.01); }
-        
-        /* Thumbnail Container for Now Playing Overlay */
-        .thumb-container { position: relative; width: 100%; height: 160px; overflow: hidden; }
-        .track-item img { width: 100%; height: 160px; object-fit: cover; display: block; transition: filter 0.3s; }
-        
-        /* Number Badge on Thumbnail */
-        .track-number-badge { position: absolute; top: 10px; right: 10px; background: rgba(0, 0, 0, 0.6); color: white; padding: 5px 12px; border-radius: 5px; font-size: 14px; font-weight: bold; z-index: 10; }
-        
-        /* Now Playing Overlay Styling */
-        .now-playing-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 82, 118, 0.65); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 18px; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
-        
-        /* Active Track State */
+        /* ===== TABS ===== */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ===== SEARCH ===== */
+        .search-container { margin-bottom: 18px; }
+        .search-input {
+            width: 100%; padding: 12px 16px;
+            border: 1.5px solid var(--border); border-radius: var(--radius-md);
+            font-size: 15px; outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            text-align: right; direction: rtl;
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,82,118,0.12); }
+
+        /* ===== SCHOLAR GRID ===== */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        .card {
+            background: var(--card-bg); border-radius: var(--radius-lg);
+            padding: 12px; text-align: center; cursor: pointer;
+            box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s;
+            position: relative; border: 1.5px solid var(--border);
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .card:active { transform: translateY(-1px); }
+        .card img { width: 100%; height: 155px; border-radius: 10px; object-fit: cover; }
+        .card h3 { margin: 10px 0 4px; font-size: 15px; color: var(--text-main); font-weight: 700; line-height: 1.3; }
+        .bayan-count-badge {
+            position: absolute; top: 16px; left: 16px;
+            background: rgba(26,82,118,0.88); color: white;
+            padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: bold;
+            direction: rtl; box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+        }
+
+        /* ===== TRACK ITEMS ===== */
+        .track-item {
+            background: var(--card-bg); margin-bottom: 16px;
+            border-radius: var(--radius-md); cursor: pointer;
+            box-shadow: var(--shadow-sm); overflow: hidden;
+            border: 1.5px solid var(--border); transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .track-item:hover { transform: scale(1.01); box-shadow: var(--shadow-md); }
+        .thumb-container { position: relative; width: 100%; height: 155px; overflow: hidden; }
+        .track-item img { width: 100%; height: 155px; object-fit: cover; display: block; transition: filter 0.3s; }
+        .track-number-badge {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.62); color: white;
+            padding: 4px 10px; border-radius: 5px; font-size: 13px; font-weight: bold; z-index: 10;
+        }
+        .now-playing-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26,82,118,0.65); display: flex;
+            justify-content: center; align-items: center; color: white;
+            font-weight: bold; font-size: 17px; opacity: 0;
+            transition: opacity 0.3s; backdrop-filter: blur(2px);
+        }
         .track-item.active-track .now-playing-overlay { opacity: 1; }
-        .track-item.active-track { border-color: #1a5276; box-shadow: 0 4px 15px rgba(26,82,118,0.2); }
-
-        .track-details { padding: 15px; text-align: right; direction: rtl; background: #fff; }
-        .track-title { 
-            margin: 0 0 6px 0; 
-            font-size: 14px;            
-            color: #1a5276; 
-            font-weight: normal;        
-            line-height: 1.4;
+        .track-item.active-track { border-color: var(--primary); box-shadow: 0 4px 18px rgba(26,82,118,0.22); }
+        .track-details { padding: 13px 14px; text-align: right; direction: rtl; }
+        .track-title { font-size: 14px; color: var(--primary); font-weight: 500; line-height: 1.45; margin-bottom: 6px; }
+        .track-meta { display: flex; align-items: center; justify-content: space-between; }
+        .track-duration { font-size: 12px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+        
+        /* Track Action Buttons */
+        .track-actions { display: flex; gap: 6px; align-items: center; }
+        .track-action-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 16px;
+            padding: 5px 6px; border-radius: 6px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
         }
-        
-        .track-duration { margin: 0; font-size: 13px; color: #7f8c8d; font-weight: 500; display: flex; align-items: center; justify-content: flex-start; gap: 5px; }
-        
-        /* Loading Spinner CSS */
-        .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 350px; width: 100%; }
-        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #1a5276; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loader-text { margin-top: 15px; color: #1a5276; font-weight: bold; font-size: 16px; }
+        .track-action-btn:hover { background: var(--border); color: var(--primary); }
+        .track-action-btn.fav-btn.favorited { color: #e74c3c; }
+        .track-action-btn.fav-btn:hover { color: #e74c3c; }
 
-        /* Audio Mini Spinner inside Player Bar */
-        .audio-mini-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #1a5276; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin-right: 10px; }
-        .audio-loading-box { display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 15px; font-family: sans-serif; }
+        /* ===== LOADING ===== */
+        .loader-container {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 300px; width: 100%;
+        }
+        .spinner {
+            border: 5px solid #e8ecf0; border-top: 5px solid var(--primary);
+            border-radius: 50%; width: 48px; height: 48px;
+            animation: spin 0.85s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-text { margin-top: 14px; color: var(--primary); font-weight: bold; font-size: 15px; }
 
-        /* Player Bar Styling */
-        .player-bar { position: fixed; bottom: 0; width: 100%; background: #2c3e50; padding: 12px 10px; display: flex; justify-content: center; align-items: center; min-height: 70px; z-index: 1000; box-sizing: border-box; box-shadow: 0 -4px 15px rgba(0,0,0,0.15); }
-        .hidden { display: none !important; }
-        
-        .back-btn { background: #1a5276; color: white; border: none; padding: 10px 22px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; font-weight: bold; transition: background 0.2s; display: inline-flex; align-items: center; gap: 5px; }
-        .back-btn:hover { background: #154360; }
-        audio { width: 100%; max-width: 600px; outline: none; }
+        /* ===== PLAYER BAR (hidden when mini player used) ===== */
+        .player-bar {
+            position: fixed; bottom: var(--nav-h); width: 100%;
+            background: var(--primary-dark);
+            display: none;
+            z-index: 900;
+            box-shadow: 0 -3px 12px rgba(0,0,0,0.18);
+        }
+        .audio-mini-spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 22px; height: 22px; animation: spin 0.85s linear infinite; }
+        .audio-loading-box { display: flex; align-items: center; justify-content: center; color: white; gap: 10px; font-size: 14px; padding: 14px; }
 
-        /* Popup Modal Styling for Bayan Request */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: right; direction: rtl; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: slideDown 0.3s ease; }
-        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-title { margin: 0 0 15px 0; color: #1a5276; font-size: 10px; font-weight: bold; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; }
-        .modal input, .modal textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        /* ===== MINI PLAYER ===== */
+        #mini-player {
+            position: fixed;
+            bottom: var(--nav-h);
+            left: 0; right: 0;
+            height: var(--mini-player-h);
+            background: var(--primary-dark);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 0 14px;
+            z-index: 900;
+            box-shadow: 0 -3px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        #mini-player.visible { display: flex; }
+        #mini-thumb {
+            width: 44px; height: 44px; border-radius: 8px;
+            object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2);
+        }
+        #mini-info { flex: 1; overflow: hidden; }
+        #mini-title {
+            color: white; font-size: 13px; font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            direction: rtl; text-align: right;
+        }
+        #mini-scholar { color: rgba(255,255,255,0.65); font-size: 11px; direction: rtl; text-align: right; }
+        .mini-btn {
+            background: rgba(255,255,255,0.12); border: none;
+            color: white; width: 36px; height: 36px; border-radius: 50%;
+            cursor: pointer; font-size: 14px; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .mini-btn:hover { background: rgba(255,255,255,0.22); }
+        .mini-playing-bars {
+            display: flex; align-items: flex-end; gap: 2px; height: 20px; flex-shrink: 0;
+        }
+        .mini-playing-bars span {
+            display: block; width: 3px; border-radius: 2px;
+            background: var(--accent); animation: sound-bars 0.9s ease-in-out infinite alternate;
+        }
+        .mini-playing-bars span:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .mini-playing-bars span:nth-child(2) { height: 14px; animation-delay: 0.2s; }
+        .mini-playing-bars span:nth-child(3) { height: 10px; animation-delay: 0.4s; }
+        .mini-playing-bars span:nth-child(4) { height: 18px; animation-delay: 0.1s; }
+        @keyframes sound-bars { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
+        #mini-player.paused .mini-playing-bars span { animation-play-state: paused; }
+
+        /* ===== BOTTOM NAV ===== */
+        #bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--nav-h);
+            background: white;
+            border-top: 1.5px solid var(--border);
+            display: flex; align-items: stretch;
+            z-index: 1000;
+            box-shadow: 0 -2px 16px rgba(0,0,0,0.08);
+        }
+        .nav-tab {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 4px; cursor: pointer; transition: all 0.2s;
+            border: none; background: none; padding: 0;
+            color: var(--text-muted); font-size: 10px; font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .nav-tab i { font-size: 20px; transition: transform 0.2s, color 0.2s; }
+        .nav-tab.active { color: var(--primary); }
+        .nav-tab.active i { transform: translateY(-2px); }
+        .nav-tab:hover { color: var(--primary-light); }
+        .nav-tab-label { font-size: 10px; }
+
+        /* ===== BACK BUTTON ===== */
+        .back-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 9px 20px; border-radius: 7px; cursor: pointer;
+            margin-bottom: 18px; font-weight: bold; transition: background 0.2s;
+            display: inline-flex; align-items: center; gap: 5px; font-size: 14px;
+        }
+        .back-btn:hover { background: var(--primary-dark); }
+
+        /* ===== SCHOLAR DETAIL HEADER ===== */
+        .scholar-header-card {
+            text-align: center; margin-bottom: 22px;
+            background: white; border-radius: var(--radius-lg);
+            padding: 22px 16px; box-shadow: var(--shadow-sm);
+            border: 1.5px solid var(--border);
+        }
+        .scholar-header-card img {
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 4px solid var(--primary); object-fit: cover;
+            box-shadow: 0 4px 14px rgba(26,82,118,0.2);
+        }
+        .scholar-header-card h2 { color: var(--text-main); margin-top: 12px; font-size: 20px; }
+
+        /* ===== FULL PLAYER MODAL ===== */
+        #full-player-modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 2000;
+            justify-content: center; align-items: flex-end;
+            backdrop-filter: blur(6px);
+        }
+        #full-player-modal.open { display: flex; }
+        .full-player-sheet {
+            background: var(--primary-dark);
+            width: 100%; max-width: 640px;
+            border-radius: 20px 20px 0 0;
+            padding: 20px 20px 32px;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .full-player-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin: 0 auto 16px; }
+        .full-player-thumb {
+            width: 100%; max-height: 200px; object-fit: cover;
+            border-radius: 12px; margin-bottom: 14px;
+        }
+        .full-player-title { color: white; font-size: 15px; font-weight: 600; text-align: right; direction: rtl; margin-bottom: 4px; line-height: 1.4; }
+        .full-player-scholar { color: rgba(255,255,255,0.65); font-size: 12px; text-align: right; direction: rtl; margin-bottom: 14px; }
+        .full-player-controls { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 14px; }
+        .fp-btn { background: rgba(255,255,255,0.12); border: none; color: white; width: 52px; height: 52px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .fp-btn:hover { background: rgba(255,255,255,0.22); }
+        .fp-play-btn { width: 64px; height: 64px; font-size: 26px; background: var(--accent); }
+        .fp-play-btn:hover { background: var(--accent-dark); }
+        .speed-row { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+        .speed-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); padding: 4px 10px; border-radius: 20px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .speed-btn.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: bold; }
+        .speed-label { color: rgba(255,255,255,0.5); font-size: 11px; }
+        .progress-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .progress-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; appearance: none; outline: none; }
+        .progress-bar::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+        .time-label { color: rgba(255,255,255,0.6); font-size: 11px; min-width: 36px; }
+        .close-fp-btn { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; }
+
+        /* ===== MODAL ===== */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal.open { display: flex; }
+        .modal-content { background: white; padding: 24px; border-radius: var(--radius-md); width: 92%; max-width: 420px; text-align: right; direction: rtl; box-shadow: var(--shadow-lg); animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-title { color: var(--primary); font-size: 13px; font-weight: 700; border-bottom: 2px solid var(--bg); padding-bottom: 10px; margin-bottom: 14px; line-height: 1.5; }
+        .modal input, .modal textarea { width: 100%; padding: 10px 12px; margin-bottom: 13px; border: 1.5px solid #ddd; border-radius: 7px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
         .modal textarea { height: 100px; resize: none; }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-start; }
-        .btn-submit { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-cancel { background: #bdc3c7; color: #333; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-submit { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 7px; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: #bdc3c7; color: #333; border: none; padding: 10px 20px; border-radius: 7px; cursor: pointer; font-weight: bold; }
+
+        /* ===== FAVORITES TAB ===== */
+        .fav-empty, .history-empty {
+            text-align: center; padding: 60px 20px; color: var(--text-muted);
+        }
+        .fav-empty i, .history-empty i { font-size: 48px; margin-bottom: 14px; display: block; opacity: 0.35; }
+        .fav-empty p, .history-empty p { font-size: 14px; }
+
+        .fav-item, .hist-item {
+            background: white; border-radius: var(--radius-md);
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; margin-bottom: 12px;
+            box-shadow: var(--shadow-sm); border: 1.5px solid var(--border);
+            cursor: pointer; transition: box-shadow 0.2s;
+        }
+        .fav-item:hover, .hist-item:hover { box-shadow: var(--shadow-md); }
+        .fav-thumb, .hist-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .fav-info, .hist-info { flex: 1; overflow: hidden; text-align: right; direction: rtl; }
+        .fav-title, .hist-title { font-size: 13px; font-weight: 600; color: var(--text-main); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fav-scholar, .hist-scholar { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+        .hist-date { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+        .fav-play-btn, .hist-play-btn { background: var(--primary); color: white; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+        .fav-play-btn:hover, .hist-play-btn:hover { background: var(--primary-dark); }
+
+        /* ===== CONTACT TAB ===== */
+        .contact-about-box {
+            background: white; border-radius: var(--radius-md);
+            padding: 18px; margin-bottom: 16px;
+            box-shadow: var(--shadow-sm); border: 1.5px solid var(--border);
+            text-align: right; direction: rtl;
+        }
+        .contact-about-box h3 { color: var(--primary); font-size: 16px; margin-bottom: 10px; }
+        .contact-about-box p { color: var(--text-main); font-size: 14px; line-height: 1.7; }
+        .contact-notice {
+            background: linear-gradient(135deg, #fff9e6, #fff3cc);
+            border: 1.5px solid #f0c040; border-radius: var(--radius-md);
+            padding: 14px 16px; margin-bottom: 16px;
+            text-align: right; direction: rtl; font-size: 13px; color: #7a5c00;
+        }
+        .contact-notice i { margin-left: 6px; }
+        .contact-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .contact-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 13px 10px; border-radius: var(--radius-md); border: none;
+            color: white; font-weight: bold; font-size: 13px; cursor: pointer;
+            text-decoration: none; transition: opacity 0.2s, transform 0.2s;
+        }
+        .contact-btn:hover { opacity: 0.88; transform: scale(1.02); }
+        .contact-btn.whatsapp { background: #25d366; }
+        .contact-btn.call { background: #2196F3; }
+        .contact-btn.email { background: #e74c3c; }
+        .contact-btn.telegram { background: #0088cc; }
+        .contact-btn.website { background: var(--primary); grid-column: 1 / -1; }
+
+        /* ===== AUDIO STATES ===== */
+        .audio-state-box { padding: 14px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; }
+        .audio-error-box { text-align: center; color: #ff6b6b; padding: 14px; }
+        .retry-btn { background: var(--accent); border: none; color: white; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-top: 8px; }
+
+        /* ===== HIDDEN ===== */
+        .hidden { display: none !important; }
+
+        audio { width: 100%; max-width: 600px; outline: none; }
     </style>
 </head>
 <body>
@@ -113,31 +397,120 @@
 </header>
 
 <div class="container">
-    <div id="loading-view" class="loader-container">
-        <div class="spinner"></div>
-        <div class="loader-text">Please Wait...</div>
+
+    <!-- HOME TAB -->
+    <div id="tab-home" class="tab-content active">
+        <div id="loading-view" class="loader-container">
+            <div class="spinner"></div>
+            <div class="loader-text">Please Wait...</div>
+        </div>
+        <div id="home-view" class="hidden">
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-input" placeholder="علما کو تلاش کریں..." oninput="filterScholars()">
+            </div>
+            <div class="grid" id="folder-container"></div>
+        </div>
+        <div id="player-view" class="hidden">
+            <button class="back-btn" onclick="goHomeExplicit()"><i class="fa fa-arrow-left"></i> Back</button>
+            <div class="scholar-header-card">
+                <img id="scholar-img" src="" alt="">
+                <h2 id="scholar-name"></h2>
+            </div>
+            <div class="search-container">
+                <input type="text" id="bayan-search-input" class="search-input" placeholder="بیان تلاش کریں..." oninput="filterBayans()">
+            </div>
+            <div id="track-list"></div>
+        </div>
     </div>
 
-    <div id="home-view" class="hidden">
-        <div class="search-container">
-            <input type="text" id="search-input" class="search-input" placeholder="Search" oninput="filterScholars()">
-        </div>
-        <div class="grid" id="folder-container"></div>
+    <!-- FAVORITES TAB -->
+    <div id="tab-favorites" class="tab-content">
+        <div id="fav-list"></div>
     </div>
 
-    <div id="player-view" class="hidden">
-        <button class="back-btn" onclick="goHomeExplicit()">← Back</button>
-        <div style="text-align:center; margin-bottom: 25px;">
-            <img id="scholar-img" src="" width="150" height="150" style="border-radius:50%; border: 4px solid #1a5276; box-shadow: 0 4px 10px rgba(0,0,0,0.15); object-fit: cover;">
-            <h2 id="scholar-name" style="color: #2c3e50; margin-top: 12px; font-size: 22px;"></h2>
+    <!-- HISTORY TAB -->
+    <div id="tab-history" class="tab-content">
+        <div id="hist-list"></div>
+    </div>
+
+    <!-- CONTACT TAB -->
+    <div id="tab-contact" class="tab-content">
+        <div id="contact-loading" class="loader-container">
+            <div class="spinner"></div>
+            <div class="loader-text">Loading...</div>
         </div>
-        <div id="track-list"></div>
+        <div id="contact-content" class="hidden"></div>
+    </div>
+
+</div><!-- /container -->
+
+<!-- MINI PLAYER -->
+<div id="mini-player">
+    <img id="mini-thumb" src="https://via.placeholder.com/44" alt="">
+    <div id="mini-info">
+        <div id="mini-title">—</div>
+        <div id="mini-scholar">—</div>
+    </div>
+    <div class="mini-playing-bars">
+        <span></span><span></span><span></span><span></span>
+    </div>
+    <button class="mini-btn" id="mini-play-btn" onclick="toggleMiniPlay(event)"><i class="fa fa-pause"></i></button>
+    <button class="mini-btn" onclick="openFullPlayer(event)"><i class="fa fa-expand-alt"></i></button>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div id="bottom-nav">
+    <button class="nav-tab active" data-tab="home" onclick="switchTab('home', this)">
+        <i class="fa fa-home"></i>
+        <span class="nav-tab-label">Home</span>
+    </button>
+    <button class="nav-tab" data-tab="favorites" onclick="switchTab('favorites', this)">
+        <i class="fa fa-heart"></i>
+        <span class="nav-tab-label">Favorites</span>
+    </button>
+    <button class="nav-tab" data-tab="history" onclick="switchTab('history', this)">
+        <i class="fa fa-history"></i>
+        <span class="nav-tab-label">History</span>
+    </button>
+    <button class="nav-tab" data-tab="contact" onclick="switchTab('contact', this)">
+        <i class="fa fa-address-book"></i>
+        <span class="nav-tab-label">Contact</span>
+    </button>
+</div>
+
+<!-- FULL PLAYER MODAL -->
+<div id="full-player-modal">
+    <div class="full-player-sheet" style="position:relative;">
+        <button class="close-fp-btn" onclick="closeFullPlayer()"><i class="fa fa-times"></i></button>
+        <div class="full-player-handle"></div>
+        <img id="fp-thumb" class="full-player-thumb" src="" alt="">
+        <div id="fp-title" class="full-player-title"></div>
+        <div id="fp-scholar" class="full-player-scholar"></div>
+        <div class="progress-row">
+            <span class="time-label" id="fp-current">0:00</span>
+            <input type="range" class="progress-bar" id="fp-progress" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
+            <span class="time-label" id="fp-duration">0:00</span>
+        </div>
+        <div class="full-player-controls">
+            <button class="fp-btn" onclick="skipAudio(-15)" title="Rewind 15s"><i class="fa fa-rotate-left"></i><span style="font-size:9px;margin-left:1px;">15</span></button>
+            <button class="fp-btn fp-play-btn" id="fp-play-btn" onclick="toggleMiniPlay(event)"><i class="fa fa-pause"></i></button>
+            <button class="fp-btn" onclick="skipAudio(15)" title="Forward 15s"><i class="fa fa-rotate-right"></i><span style="font-size:9px;margin-left:1px;">15</span></button>
+        </div>
+        <div class="speed-row">
+            <span class="speed-label">Speed:</span>
+            <button class="speed-btn" onclick="setSpeed(0.75)">0.75×</button>
+            <button class="speed-btn active" onclick="setSpeed(1)">1×</button>
+            <button class="speed-btn" onclick="setSpeed(1.25)">1.25×</button>
+            <button class="speed-btn" onclick="setSpeed(1.5)">1.5×</button>
+            <button class="speed-btn" onclick="setSpeed(2)">2×</button>
+        </div>
     </div>
 </div>
 
+<!-- REQUEST MODAL -->
 <div class="modal" id="requestModal">
     <div class="modal-content">
-        <div class="modal-title">جس بھی عالم کا بیان چاہیے ان نام لکھ دیں انکے بیانات اگر انٹرنیٹ پر موجود ہوں گے تو بہت جلد ڈال دیے جائیں گے</div>
+        <div class="modal-title">جس بھی عالم کا بیان چاہیے ان نام لکھ دیں — انکے بیانات اگر انٹرنیٹ پر موجود ہوں گے تو بہت جلد ڈال دیے جائیں گے</div>
         <textarea id="req-message" placeholder="عالم کا نام لکھیں"></textarea>
         <div class="modal-buttons">
             <button class="btn-submit" onclick="submitRequest()">Send Message</button>
@@ -146,266 +519,551 @@
     </div>
 </div>
 
-<div class="player-bar" id="player-bar">
-    <div id="media-container" style="width: 100%; max-width: 600px; display: flex; justify-content: center;"></div>
-</div>
-
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAEItN0OBCInSwzRDeKzWyAqg08mtciQMA",
-        authDomain: "bayan-app-7e2fe.firebaseapp.com",
-        databaseURL: "https://bayan-app-7e2fe-default-rtdb.firebaseio.com",
-        projectId: "bayan-app-7e2fe",
-        storageBucket: "bayan-app-7e2fe.firebasestorage.app",
-        messagingSenderId: "702165343503",
-        appId: "1:702165343503:web:be2792a91310f9f4c3727a"
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+/* ===== FIREBASE CONFIG ===== */
+const firebaseConfig = {
+    apiKey: "AIzaSyAEItN0OBCInSwzRDeKzWyAqg08mtciQMA",
+    authDomain: "bayan-app-7e2fe.firebaseapp.com",
+    databaseURL: "https://bayan-app-7e2fe-default-rtdb.firebaseio.com",
+    projectId: "bayan-app-7e2fe",
+    storageBucket: "bayan-app-7e2fe.firebasestorage.app",
+    messagingSenderId: "702165343503",
+    appId: "1:702165343503:web:be2792a91310f9f4c3727a"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-    let localScholarsData = {};
-    let currentTrackUrl = "";
-    let activeAudioElement = null;
-    let isInternalBack = false;
+/* ===== STATE ===== */
+let localScholarsData = {};
+let currentTrackUrl = "";
+let currentScholarId = "";
+let currentScholarName = "";
+let currentTrackData = null;
+let activeAudioElement = null;
+let isInternalBack = false;
+let allTracksForFilter = [];
 
-    function loadData() {
-        database.ref('scholars').on('value', (snapshot) => {
-            const data = snapshot.val();
-            localScholarsData = data || {};
-            displayScholars(localScholarsData);
+/* ===== TAB NAVIGATION ===== */
+function switchTab(tabName, el) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    el.classList.add('active');
+    if (tabName === 'favorites') renderFavorites();
+    if (tabName === 'history') renderHistory();
+    if (tabName === 'contact') loadContact();
+}
 
-            document.getElementById('loading-view').style.display = 'none';
-            document.getElementById('home-view').classList.remove('hidden');
-        });
-    }
-
-    function displayScholars(data) {
-        const container = document.getElementById('folder-container');
-        container.innerHTML = "";
-
-        const keys = Object.keys(data);
-        if (keys.length === 0) {
-            container.innerHTML = "<p style='text-align:center; grid-column: span 2; color: gray;'>کوئی ریکارڈ نہیں ملا۔</p>";
-            return;
-        }
-
-        keys.sort((a, b) => {
-            const posA = data[a].position !== undefined ? data[a].position : 999;
-            const posB = data[b].position !== undefined ? data[b].position : 999;
-            return posA - posB;
-        });
-
-        keys.forEach(id => {
-            const s = data[id];
-            const totalTracks = s.tracks ? Object.keys(s.tracks).length : 0;
-            
-            container.innerHTML += `
-                <div class="card" data-name="${s.name}" onclick="openScholar('${id}')">
-                    <span class="bayan-count-badge">${totalTracks} </span>
-                    <img src="${s.img || 'https://via.placeholder.com/150'}">
-                    <h3>${s.name}</h3>
-                </div>`;
-        });
-    }
-
-    function filterScholars() {
-        const query = document.getElementById('search-input').value.toLowerCase().trim();
-        const filteredData = {};
-        
-        Object.keys(localScholarsData).forEach(id => {
-            if (localScholarsData[id].name.toLowerCase().includes(query)) {
-                filteredData[id] = localScholarsData[id];
-            }
-        });
-        displayScholars(filteredData);
-    }
-
-    function openScholar(id) {
-        const scholar = localScholarsData[id];
-        if(!scholar) return;
-
-        document.getElementById('home-view').classList.add('hidden');
-        document.getElementById('loading-view').style.display = 'flex';
-
-        setTimeout(() => {
-            document.getElementById('loading-view').style.display = 'none';
-            document.getElementById('player-view').classList.remove('hidden');
-            
-            document.getElementById('scholar-name').innerText = scholar.name;
-            document.getElementById('scholar-img').src = scholar.img || 'https://via.placeholder.com/150';
-            
-            const list = document.getElementById('track-list');
-            list.innerHTML = "";
-
-            if (scholar.tracks) {
-                let trackIndex = 1;
-                // ٹریکس کی چابیاں نکال کر الٹ (reverse) کر دیں تاکہ نیا پہلے شو ہو
-                const trackKeys = Object.keys(scholar.tracks).reverse();
-                
-                trackKeys.forEach(trackId => {
-                    const t = scholar.tracks[trackId];
-                    const durationText = t.duration ? `⏱️: ${t.duration}` : '⏱️ Duration: Unknown';
-                    const isActive = (currentTrackUrl === t.file) ? 'active-track' : '';
-
-                    list.innerHTML += `
-                        <div class="track-item ${isActive}" data-file="${t.file}" onclick="playAudio('${t.file}', this)">
-                            <div class="thumb-container">
-                                <span class="track-number-badge">${trackIndex}</span>
-                                <img src="${t.thumb || 'https://via.placeholder.com/600x300'}">
-                                <div class="now-playing-overlay">Now Playing 🎵</div>
-                            </div>
-                            <div class="track-details">
-                                <p class="track-title">${t.title}</p>
-                                <p class="track-duration">${durationText}</p>
-                            </div>
-                        </div>
-                    `;
-                    trackIndex++;
-                });
-            } else {
-                list.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>کوئی بیان موجود نہیں ہے۔</p>";
-            }
-
-            window.history.pushState({ page: 'player' }, '');
-        }, 1500);
-    }
-
-    function playAudio(file, element) {
-        currentTrackUrl = file;
-        const container = document.getElementById('media-container');
-        container.innerHTML = "";
-        activeAudioElement = null;
-
-        document.querySelectorAll('.track-item').forEach(item => {
-            item.classList.remove('active-track');
-        });
-        if (element) {
-            element.classList.add('active-track');
-        } else {
-            const target = document.querySelector(`.track-item[data-file="${file}"]`);
-            if (target) target.classList.add('active-track');
-        }
-
-        container.innerHTML = `
-            <div id="audio-loading" class="audio-loading-box">
-                <div class="audio-mini-spinner"></div>
-                <span>Loading Audio...</span>
-            </div>
-        `;
-
-        const isDirectAudio = file.toLowerCase().endsWith('.mp3') || file.toLowerCase().endsWith('.wav') || file.includes('/Lectures/');
-
-        if (isDirectAudio) {
-            const audioElement = document.createElement('audio');
-            audioElement.src = file;
-            audioElement.controls = true;
-            audioElement.autoplay = true;
-            audioElement.preload = "auto";
-            audioElement.style.display = "none";
-
-            activeAudioElement = audioElement;
-
-            audioElement.addEventListener('canplay', () => {
-                const loadingBox = document.getElementById('audio-loading');
-                if (loadingBox) loadingBox.remove();
-                audioElement.style.display = "block";
-            });
-
-            audioElement.addEventListener('loadedmetadata', () => {
-                const savedTime = localStorage.getItem('resume_' + btoa(currentTrackUrl));
-                if (savedTime) {
-                    audioElement.currentTime = parseFloat(savedTime);
-                }
-            });
-
-            audioElement.addEventListener('timeupdate', () => {
-                localStorage.setItem('resume_' + btoa(currentTrackUrl), audioElement.currentTime);
-            });
-
-            audioElement.addEventListener('ended', () => {
-                localStorage.removeItem('resume_' + btoa(currentTrackUrl));
-                document.querySelectorAll('.track-item').forEach(item => item.classList.remove('active-track'));
-            });
-
-            container.appendChild(audioElement);
-        } else {
-            const iframe = document.createElement('iframe');
-            iframe.id = "bayan-iframe";
-            iframe.src = `${file}?autoplay=1`;
-            iframe.width = "100%";
-            iframe.height = "60";
-            iframe.frameBorder = "0";
-            iframe.allow = "autoplay";
-            iframe.style.display = "none";
-
-            iframe.addEventListener('load', () => {
-                const loadingBox = document.getElementById('audio-loading');
-                if (loadingBox) loadingBox.remove();
-                iframe.style.display = "block";
-            });
-
-            container.appendChild(iframe);
-        }
-    }
-
-    function goHome() {
-        document.getElementById('player-view').classList.add('hidden');
-        document.getElementById('loading-view').style.display = 'flex';
-        document.getElementById('search-input').value = "";
-
-        setTimeout(() => {
-            document.getElementById('loading-view').style.display = 'none';
-            document.getElementById('home-view').classList.remove('hidden');
-            displayScholars(localScholarsData);
-        }, 1500);
-    }
-
-    function goHomeExplicit() {
-        isInternalBack = true;
-        window.history.back();
-    }
-
-    window.addEventListener('popstate', (event) => {
-        const playerView = document.getElementById('player-view');
-        if (!playerView.classList.contains('hidden')) {
-            goHome();
-        }
+/* ===== DATA LOADING ===== */
+function loadData() {
+    database.ref('scholars').on('value', (snapshot) => {
+        const data = snapshot.val();
+        localScholarsData = data || {};
+        displayScholars(localScholarsData);
+        document.getElementById('loading-view').style.display = 'none';
+        document.getElementById('home-view').classList.remove('hidden');
+        tryResumePlayback();
     });
+}
 
-    function toggleModal(show) {
-        const modal = document.getElementById('requestModal');
-        modal.style.display = show ? 'flex' : 'none';
-        if(!show) {
-            document.getElementById('req-message').value = "";
-        }
+/* ===== SCHOLAR DISPLAY ===== */
+function displayScholars(data) {
+    const container = document.getElementById('folder-container');
+    container.innerHTML = "";
+    const keys = Object.keys(data);
+    if (keys.length === 0) {
+        container.innerHTML = "<p style='text-align:center; grid-column: span 2; color: gray; margin-top:40px;'>کوئی ریکارڈ نہیں ملا۔</p>";
+        return;
+    }
+    keys.sort((a, b) => {
+        const posA = data[a].position !== undefined ? data[a].position : 999;
+        const posB = data[b].position !== undefined ? data[b].position : 999;
+        return posA - posB;
+    });
+    keys.forEach(id => {
+        const s = data[id];
+        const totalTracks = s.tracks ? Object.keys(s.tracks).length : 0;
+        container.innerHTML += `
+            <div class="card" data-name="${escapeHtml(s.name)}" onclick="openScholar('${id}')">
+                <span class="bayan-count-badge">${totalTracks} بیان</span>
+                <img src="${s.img || 'https://via.placeholder.com/300x155'}" alt="${escapeHtml(s.name)}" loading="lazy">
+                <h3>${escapeHtml(s.name)}</h3>
+            </div>`;
+    });
+}
+
+function filterScholars() {
+    const query = document.getElementById('search-input').value.toLowerCase().trim();
+    const filtered = {};
+    Object.keys(localScholarsData).forEach(id => {
+        if (localScholarsData[id].name.toLowerCase().includes(query)) filtered[id] = localScholarsData[id];
+    });
+    displayScholars(filtered);
+}
+
+/* ===== SCHOLAR DETAIL / PLAYER VIEW ===== */
+function openScholar(id) {
+    const scholar = localScholarsData[id];
+    if (!scholar) return;
+    currentScholarId = id;
+    currentScholarName = scholar.name;
+
+    document.getElementById('home-view').classList.add('hidden');
+    document.getElementById('loading-view').style.display = 'flex';
+
+    setTimeout(() => {
+        document.getElementById('loading-view').style.display = 'none';
+        document.getElementById('player-view').classList.remove('hidden');
+        document.getElementById('scholar-name').innerText = scholar.name;
+        document.getElementById('scholar-img').src = scholar.img || 'https://via.placeholder.com/150';
+        document.getElementById('bayan-search-input').value = '';
+
+        buildTrackList(scholar);
+        window.history.pushState({ page: 'player' }, '');
+    }, 800);
+}
+
+function buildTrackList(scholar) {
+    const list = document.getElementById('track-list');
+    list.innerHTML = "";
+    allTracksForFilter = [];
+
+    if (!scholar.tracks) {
+        list.innerHTML = "<p style='text-align:center; color:var(--text-muted); font-weight:bold; margin-top:30px;'>کوئی بیان موجود نہیں ہے۔</p>";
+        return;
     }
 
-    function submitRequest() {
-        const msgText = document.getElementById('req-message').value.trim();
+    const trackKeys = Object.keys(scholar.tracks).reverse();
+    trackKeys.forEach((trackId, index) => {
+        const t = scholar.tracks[trackId];
+        allTracksForFilter.push({ trackId, t });
+    });
+    renderTrackList(allTracksForFilter, scholar);
+}
 
-        if(!msgText) {
-            alert("براہ کرم بیان کی تفصیلات لکھیں!");
-            return;
+function renderTrackList(items, scholar) {
+    const list = document.getElementById('track-list');
+    list.innerHTML = "";
+    const s = scholar || localScholarsData[currentScholarId];
+    if (!s) return;
+
+    items.forEach(({ trackId, t }, index) => {
+        const durationText = t.duration ? `⏱️ ${t.duration}` : '';
+        const isActive = (currentTrackUrl === t.file) ? 'active-track' : '';
+        const isFav = isFavorite(trackId);
+        list.innerHTML += `
+            <div class="track-item ${isActive}" data-file="${t.file}" data-trackid="${trackId}" onclick="playAudio('${t.file}', this, '${trackId}', '${escapeAttr(t.title)}', '${escapeAttr(t.thumb || '')}', '${escapeAttr(s.name)}')">
+                <div class="thumb-container">
+                    <span class="track-number-badge">${index + 1}</span>
+                    <img src="${t.thumb || 'https://via.placeholder.com/640x320'}" alt="" loading="lazy">
+                    <div class="now-playing-overlay">▶ Now Playing</div>
+                </div>
+                <div class="track-details">
+                    <p class="track-title">${escapeHtml(t.title)}</p>
+                    <div class="track-meta">
+                        <div class="track-actions" onclick="event.stopPropagation()">
+                            <button class="track-action-btn fav-btn ${isFav ? 'favorited' : ''}" 
+                                onclick="toggleFavorite('${trackId}', '${escapeAttr(t.title)}', '${escapeAttr(t.thumb || '')}', '${escapeAttr(t.file)}', '${escapeAttr(s.name)}', this)"
+                                title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}">
+                                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                            </button>
+                            <button class="track-action-btn" onclick="shareBayan('${escapeAttr(t.title)}', '${escapeAttr(t.file)}')" title="Share">
+                                <i class="fa-solid fa-share-nodes"></i>
+                            </button>
+                            <button class="track-action-btn" onclick="downloadBayan('${escapeAttr(t.file)}', '${escapeAttr(t.title)}')" title="Download">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                        </div>
+                        <p class="track-duration">${durationText}</p>
+                    </div>
+                </div>
+            </div>`;
+    });
+}
+
+function filterBayans() {
+    const query = document.getElementById('bayan-search-input').value.toLowerCase().trim();
+    const scholar = localScholarsData[currentScholarId];
+    if (!scholar) return;
+    const filtered = allTracksForFilter.filter(({ t }) => t.title.toLowerCase().includes(query));
+    renderTrackList(filtered, scholar);
+}
+
+/* ===== AUDIO PLAYER ===== */
+function playAudio(file, element, trackId, title, thumb, scholarName) {
+    currentTrackUrl = file;
+
+    // Update mini player info
+    document.getElementById('mini-thumb').src = thumb || 'https://via.placeholder.com/44';
+    document.getElementById('mini-title').textContent = title;
+    document.getElementById('mini-scholar').textContent = scholarName;
+
+    // Update full player info
+    document.getElementById('fp-thumb').src = thumb || 'https://via.placeholder.com/640x320';
+    document.getElementById('fp-title').textContent = title;
+    document.getElementById('fp-scholar').textContent = scholarName;
+
+    // Mark active track
+    document.querySelectorAll('.track-item').forEach(item => item.classList.remove('active-track'));
+    if (element) element.classList.add('active-track');
+
+    // Stop previous audio
+    if (activeAudioElement) {
+        activeAudioElement.pause();
+        activeAudioElement = null;
+    }
+
+    // Show mini player
+    document.getElementById('mini-player').classList.add('visible');
+    document.getElementById('mini-player').classList.remove('paused');
+    document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+    document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+
+    // Determine if direct audio
+    const isDirectAudio = /\.(mp3|wav|ogg|m4a|aac)(\?|$)/i.test(file) || file.includes('/Lectures/');
+
+    if (isDirectAudio) {
+        const audio = new Audio(file);
+        audio.preload = "auto";
+        activeAudioElement = audio;
+
+        // Resume logic
+        const savedTime = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(file))));
+        if (savedTime) {
+            audio.addEventListener('loadedmetadata', () => {
+                audio.currentTime = parseFloat(savedTime);
+                audio.play().catch(() => {});
+            }, { once: true });
+        } else {
+            audio.play().catch(() => {});
         }
 
-        const finalMessage = `📢 **New Bayan Request**\n📝 Details: ${msgText}`;
-
-        database.ref('messages').push({
-            message: finalMessage,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            alert("آپ کی درخواست کامیابی سے بھیج دی گئی ہے!");
-            toggleModal(false);
-        }).catch((err) => {
-            alert("درخواست بھیجنے میں خرابی آئی۔ دوبارہ کوشش کریں۔");
-            console.error(err);
+        // Progress updates
+        audio.addEventListener('timeupdate', () => {
+            const key = 'resume_' + btoa(unescape(encodeURIComponent(file)));
+            localStorage.setItem(key, audio.currentTime);
+            // Save resume data
+            localStorage.setItem('last_resume', JSON.stringify({ file, currentTime: audio.currentTime, scholarId: currentScholarId, trackId }));
+            // Update progress bar
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                document.getElementById('fp-progress').value = pct;
+                document.getElementById('fp-current').textContent = formatTime(audio.currentTime);
+                document.getElementById('fp-duration').textContent = formatTime(audio.duration);
+            }
         });
+
+        audio.addEventListener('ended', () => {
+            localStorage.removeItem('resume_' + btoa(unescape(encodeURIComponent(file))));
+            document.querySelectorAll('.track-item').forEach(i => i.classList.remove('active-track'));
+            document.getElementById('mini-player').classList.add('paused');
+            document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+            document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+        });
+
+        audio.addEventListener('error', () => {
+            document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
+        });
+
+        audio.addEventListener('waiting', () => {
+            document.getElementById('mini-playing-state').innerHTML = 'Buffering...';
+        });
+
+    } else {
+        // Iframe-based (non-direct audio)
+        activeAudioElement = null;
     }
 
+    // Save to history
+    saveHistory({ file, title, thumb, scholarName, trackId });
 
+    // Store current track data for full player
+    currentTrackData = { file, title, thumb, scholarName, trackId };
 
-    loadData();
+    // Persist resume info
+    localStorage.setItem('last_resume', JSON.stringify({
+        file, currentTime: 0, scholarId: currentScholarId, trackId, title, thumb, scholarName
+    }));
+}
+
+function toggleMiniPlay(event) {
+    if (event) event.stopPropagation();
+    if (!activeAudioElement) return;
+    const miniPlayer = document.getElementById('mini-player');
+    if (activeAudioElement.paused) {
+        activeAudioElement.play().catch(() => {});
+        miniPlayer.classList.remove('paused');
+        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-pause"></i>';
+    } else {
+        activeAudioElement.pause();
+        miniPlayer.classList.add('paused');
+        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+    }
+}
+
+function seekAudio(value) {
+    if (!activeAudioElement || !activeAudioElement.duration) return;
+    activeAudioElement.currentTime = (value / 100) * activeAudioElement.duration;
+}
+
+function skipAudio(seconds) {
+    if (!activeAudioElement) return;
+    activeAudioElement.currentTime = Math.max(0, Math.min(activeAudioElement.duration, activeAudioElement.currentTime + seconds));
+}
+
+function setSpeed(speed) {
+    if (activeAudioElement) activeAudioElement.playbackRate = speed;
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function formatTime(secs) {
+    if (!secs || isNaN(secs)) return '0:00';
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+/* ===== FULL PLAYER MODAL ===== */
+function openFullPlayer(event) {
+    if (event) event.stopPropagation();
+    document.getElementById('full-player-modal').classList.add('open');
+}
+function closeFullPlayer() {
+    document.getElementById('full-player-modal').classList.remove('open');
+}
+document.getElementById('full-player-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeFullPlayer();
+});
+
+/* ===== RESUME PLAYBACK ===== */
+function tryResumePlayback() {
+    try {
+        const data = JSON.parse(localStorage.getItem('last_resume') || 'null');
+        if (!data || !data.file) return;
+        // Just restore mini player display without auto-playing
+        document.getElementById('mini-thumb').src = data.thumb || 'https://via.placeholder.com/44';
+        document.getElementById('mini-title').textContent = data.title || '—';
+        document.getElementById('mini-scholar').textContent = data.scholarName || '—';
+        document.getElementById('fp-thumb').src = data.thumb || '';
+        document.getElementById('fp-title').textContent = data.title || '';
+        document.getElementById('fp-scholar').textContent = data.scholarName || '';
+        currentTrackUrl = data.file;
+        currentScholarId = data.scholarId || '';
+        currentTrackData = data;
+        // Show mini player in paused state
+        document.getElementById('mini-player').classList.add('visible', 'paused');
+        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-play"></i>';
+    } catch(e) {}
+}
+
+/* ===== NAVIGATION ===== */
+function goHome() {
+    document.getElementById('player-view').classList.add('hidden');
+    document.getElementById('loading-view').style.display = 'flex';
+    document.getElementById('search-input').value = "";
+    document.getElementById('bayan-search-input').value = "";
+    setTimeout(() => {
+        document.getElementById('loading-view').style.display = 'none';
+        document.getElementById('home-view').classList.remove('hidden');
+        displayScholars(localScholarsData);
+    }, 600);
+}
+
+function goHomeExplicit() {
+    isInternalBack = true;
+    window.history.back();
+}
+
+window.addEventListener('popstate', () => {
+    if (!document.getElementById('player-view').classList.contains('hidden')) {
+        goHome();
+    }
+});
+
+/* ===== FAVORITES ===== */
+function getFavorites() {
+    try { return JSON.parse(localStorage.getItem('ud_favorites') || '[]'); } catch(e) { return []; }
+}
+function saveFavorites(favs) { localStorage.setItem('ud_favorites', JSON.stringify(favs)); }
+function isFavorite(trackId) { return getFavorites().some(f => f.trackId === trackId); }
+
+function toggleFavorite(trackId, title, thumb, file, scholarName, btn) {
+    let favs = getFavorites();
+    const idx = favs.findIndex(f => f.trackId === trackId);
+    if (idx > -1) {
+        favs.splice(idx, 1);
+        btn.classList.remove('favorited');
+        btn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+    } else {
+        favs.push({ trackId, title, thumb, file, scholarName, addedAt: Date.now() });
+        btn.classList.add('favorited');
+        btn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+    }
+    saveFavorites(favs);
+}
+
+function renderFavorites() {
+    const favs = getFavorites();
+    const el = document.getElementById('fav-list');
+    if (favs.length === 0) {
+        el.innerHTML = `<div class="fav-empty"><i class="fa-regular fa-heart"></i><p>ابھی کوئی پسندیدہ بیان نہیں ہے۔<br>بیانات پر دل کا نشان دبائیں۔</p></div>`;
+        return;
+    }
+    el.innerHTML = '';
+    favs.forEach(f => {
+        el.innerHTML += `
+            <div class="fav-item" onclick="playFromList('${escapeAttr(f.file)}', '${escapeAttr(f.title)}', '${escapeAttr(f.thumb)}', '${escapeAttr(f.scholarName)}', '${f.trackId}')">
+                <img class="fav-thumb" src="${f.thumb || 'https://via.placeholder.com/56'}" alt="" loading="lazy">
+                <div class="fav-info">
+                    <div class="fav-title">${escapeHtml(f.title)}</div>
+                    <div class="fav-scholar">${escapeHtml(f.scholarName)}</div>
+                </div>
+                <button class="fav-play-btn" onclick="playFromList('${escapeAttr(f.file)}', '${escapeAttr(f.title)}', '${escapeAttr(f.thumb)}', '${escapeAttr(f.scholarName)}', '${f.trackId}'); event.stopPropagation();">
+                    <i class="fa fa-play"></i>
+                </button>
+            </div>`;
+    });
+}
+
+/* ===== HISTORY ===== */
+function getHistory() {
+    try { return JSON.parse(localStorage.getItem('ud_history') || '[]'); } catch(e) { return []; }
+}
+function saveHistory(track) {
+    let hist = getHistory().filter(h => h.file !== track.file);
+    hist.unshift({ ...track, playedAt: Date.now() });
+    hist = hist.slice(0, 10);
+    localStorage.setItem('ud_history', JSON.stringify(hist));
+}
+
+function renderHistory() {
+    const hist = getHistory();
+    const el = document.getElementById('hist-list');
+    if (hist.length === 0) {
+        el.innerHTML = `<div class="history-empty"><i class="fa fa-history"></i><p>ابھی کوئی سننے کی تاریخ نہیں ہے۔<br>بیانات سنیں اور یہاں محفوظ ہوں گے۔</p></div>`;
+        return;
+    }
+    el.innerHTML = '';
+    hist.forEach(h => {
+        const date = new Date(h.playedAt).toLocaleDateString('ur-PK', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        el.innerHTML += `
+            <div class="hist-item" onclick="playFromList('${escapeAttr(h.file)}', '${escapeAttr(h.title)}', '${escapeAttr(h.thumb)}', '${escapeAttr(h.scholarName)}', '${h.trackId}')">
+                <img class="hist-thumb" src="${h.thumb || 'https://via.placeholder.com/56'}" alt="" loading="lazy">
+                <div class="hist-info">
+                    <div class="hist-title">${escapeHtml(h.title)}</div>
+                    <div class="hist-scholar">${escapeHtml(h.scholarName)}</div>
+                    <div class="hist-date"><i class="fa fa-clock"></i> ${date}</div>
+                </div>
+                <button class="hist-play-btn" onclick="playFromList('${escapeAttr(h.file)}', '${escapeAttr(h.title)}', '${escapeAttr(h.thumb)}', '${escapeAttr(h.scholarName)}', '${h.trackId}'); event.stopPropagation();">
+                    <i class="fa fa-play"></i>
+                </button>
+            </div>`;
+    });
+}
+
+function playFromList(file, title, thumb, scholarName, trackId) {
+    playAudio(file, null, trackId, title, thumb, scholarName);
+}
+
+/* ===== CONTACT TAB ===== */
+let contactLoaded = false;
+function loadContact() {
+    if (contactLoaded) return;
+    database.ref('settings').once('value', (snap) => {
+        contactLoaded = true;
+        document.getElementById('contact-loading').style.display = 'none';
+        const el = document.getElementById('contact-content');
+        el.classList.remove('hidden');
+        const d = snap.val() || {};
+        let html = '';
+        if (d.notice) html += `<div class="contact-notice"><i class="fa fa-bell"></i>${escapeHtml(d.notice)}</div>`;
+        if (d.about) html += `<div class="contact-about-box"><h3>ہمارے بارے میں</h3><p>${escapeHtml(d.about)}</p></div>`;
+        html += '<div class="contact-buttons">';
+        if (d.whatsapp) html += `<a class="contact-btn whatsapp" href="https://wa.me/${d.whatsapp.replace(/\D/g,'')}" target="_blank"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`;
+        if (d.phone) html += `<a class="contact-btn call" href="tel:${d.phone}"><i class="fa fa-phone"></i> Call</a>`;
+        if (d.email) html += `<a class="contact-btn email" href="mailto:${d.email}"><i class="fa fa-envelope"></i> Email</a>`;
+        if (d.telegram) html += `<a class="contact-btn telegram" href="https://t.me/${d.telegram.replace('@','')}" target="_blank"><i class="fa-brands fa-telegram"></i> Telegram</a>`;
+        if (d.website) html += `<a class="contact-btn website" href="${d.website}" target="_blank"><i class="fa fa-globe"></i> Website</a>`;
+        html += '</div>';
+        if (!d.whatsapp && !d.phone && !d.email && !d.telegram && !d.website && !d.about) {
+            html = `<div class="fav-empty"><i class="fa fa-address-book"></i><p>رابطہ کی معلومات ابھی دستیاب نہیں ہیں۔</p></div>`;
+        }
+        el.innerHTML = html;
+    }, () => {
+        document.getElementById('contact-loading').style.display = 'none';
+        document.getElementById('contact-content').classList.remove('hidden');
+        document.getElementById('contact-content').innerHTML = `<div class="fav-empty"><i class="fa fa-exclamation-triangle"></i><p>معلومات لوڈ کرنے میں خرابی آئی۔</p></div>`;
+    });
+}
+
+/* ===== SHARE & DOWNLOAD ===== */
+function shareBayan(title, file) {
+    if (navigator.share) {
+        navigator.share({ title: title, text: title, url: file }).catch(() => {});
+    } else {
+        copyToClipboard(file);
+        alert('لنک کاپی ہو گیا!');
+    }
+}
+
+function downloadBayan(file, title) {
+    const a = document.createElement('a');
+    a.href = file;
+    a.download = (title || 'bayan') + '.mp3';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function copyToClipboard(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+}
+
+/* ===== REQUEST MODAL ===== */
+function toggleModal(show) {
+    const modal = document.getElementById('requestModal');
+    modal.classList.toggle('open', show);
+    if (!show) document.getElementById('req-message').value = "";
+}
+
+function submitRequest() {
+    const msgText = document.getElementById('req-message').value.trim();
+    if (!msgText) { alert("براہ کرم بیان کی تفصیلات لکھیں!"); return; }
+    const finalMessage = `📢 New Bayan Request\n📝 Details: ${msgText}`;
+    database.ref('messages').push({
+        message: finalMessage,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        alert("آپ کی درخواست کامیابی سے بھیج دی گئی ہے!");
+        toggleModal(false);
+    }).catch(err => {
+        alert("درخواست بھیجنے میں خرابی آئی۔ دوبارہ کوشش کریں۔");
+        console.error(err);
+    });
+}
+
+/* ===== UTILITIES ===== */
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escapeAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+}
+
+/* ===== INIT ===== */
+loadData();
 </script>
 </body>
 </html>
