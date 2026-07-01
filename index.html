@@ -182,7 +182,7 @@
         @keyframes sound-bars { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
         #mini-player.paused .mini-playing-bars span { animation-play-state: paused; }
 
-        /* FIX 2: Mini player buffering spinner */
+        /* Mini player buffering spinner */
         #mini-loading-spinner {
             display: none;
             width: 20px; height: 20px;
@@ -439,7 +439,6 @@
         <div id="mini-title">—</div>
         <div id="mini-scholar">—</div>
     </div>
-    <!-- FIX 2: buffering spinner in mini player -->
     <div id="mini-loading-spinner"></div>
     <div class="mini-playing-bars"><span></span><span></span><span></span><span></span></div>
     <button class="mini-btn" id="mini-play-btn" onclick="toggleMiniPlay(event)"><i class="fa fa-pause"></i></button>
@@ -531,18 +530,41 @@ let downloadClickCount = 0;
 const globalAudio = new Audio();
 globalAudio.preload = "auto";
 
+/* ===== STALL / AUTO-RECOVERY STATE =====
+   Fixes the "audio cracks/stops after 1-2 minutes and never resumes
+   until the app is fully closed and reopened" issue. Root causes were:
+   1) localStorage.setItem() was being called on every 'timeupdate' tick
+      (multiple times per second), which caused audio glitches/cracks
+      on many mobile webviews due to blocking disk I/O.
+   2) There was no automatic recovery when the audio stalled ('waiting')
+      or errored out ('error') - it just showed a warning icon and sat
+      there forever, since nothing ever reloaded the source.
+*/
+let lastSaveTime = 0;
+let stallTimer = null;
+let retryCount = 0;
+const MAX_RETRIES = 5;
+const STALL_TIMEOUT_MS = 8000;
+
 globalAudio.addEventListener('timeupdate', () => {
     if (!currentTrackUrl) return;
-    try {
-        const key = 'resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl)));
-        localStorage.setItem(key, globalAudio.currentTime);
-    } catch(e) {}
+    // Throttle localStorage writes to once every 3 seconds instead of every tick.
+    const now = Date.now();
+    if (now - lastSaveTime > 3000) {
+        lastSaveTime = now;
+        try {
+            const key = 'resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl)));
+            localStorage.setItem(key, globalAudio.currentTime);
+        } catch(e) {}
+    }
     if (globalAudio.duration) {
         const pct = (globalAudio.currentTime / globalAudio.duration) * 100;
         document.getElementById('fp-progress').value = pct;
         document.getElementById('fp-current').textContent = formatTime(globalAudio.currentTime);
         document.getElementById('fp-duration').textContent = formatTime(globalAudio.duration);
     }
+    // Playback is progressing normally, so reset the retry counter.
+    retryCount = 0;
 });
 
 globalAudio.addEventListener('ended', () => {
@@ -550,18 +572,56 @@ globalAudio.addEventListener('ended', () => {
     document.querySelectorAll('.track-item').forEach(i => i.classList.remove('active-track'));
     setPlayingUI(false);
     updateListNowPlaying('');
+    clearStallTimer();
 });
 
 globalAudio.addEventListener('error', () => {
     setBuffering(false);
-    document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
-    document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
+    if (retryCount < MAX_RETRIES) {
+        attemptRecovery();
+    } else {
+        document.getElementById('mini-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
+        document.getElementById('fp-play-btn').innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
+    }
 });
 
-/* FIX 2: buffering events */
-globalAudio.addEventListener('waiting', () => { setBuffering(true); });
-globalAudio.addEventListener('playing', () => { setBuffering(false); });
-globalAudio.addEventListener('canplay', () => { setBuffering(false); });
+/* buffering events */
+globalAudio.addEventListener('waiting', () => {
+    setBuffering(true);
+    clearStallTimer();
+    // If it's still stuck buffering after STALL_TIMEOUT_MS, force a reload+resume.
+    stallTimer = setTimeout(() => {
+        if (globalAudio.paused === false || !globalAudio.ended) {
+            attemptRecovery();
+        }
+    }, STALL_TIMEOUT_MS);
+});
+globalAudio.addEventListener('playing', () => { setBuffering(false); clearStallTimer(); });
+globalAudio.addEventListener('canplay', () => { setBuffering(false); clearStallTimer(); });
+globalAudio.addEventListener('stalled', () => {
+    clearStallTimer();
+    stallTimer = setTimeout(() => { attemptRecovery(); }, STALL_TIMEOUT_MS);
+});
+
+function clearStallTimer() {
+    if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+}
+
+/* Automatically reloads the current track from where it left off.
+   This is what makes the player self-heal instead of dying silently. */
+function attemptRecovery() {
+    if (!currentTrackUrl || retryCount >= MAX_RETRIES) return;
+    retryCount++;
+    const resumeTime = globalAudio.currentTime || 0;
+    setBuffering(true);
+    globalAudio.src = currentTrackUrl;
+    globalAudio.load();
+    globalAudio.addEventListener('loadedmetadata', function onMeta() {
+        globalAudio.currentTime = resumeTime;
+        globalAudio.play().catch(() => {});
+        globalAudio.removeEventListener('loadedmetadata', onMeta);
+    }, { once: true });
+}
 
 function setBuffering(isBuffering) {
     const miniPlayer = document.getElementById('mini-player');
@@ -779,6 +839,8 @@ function renderTrackList(items, scholar) {
 
 /* ===== AUDIO PLAYER ===== */
 function playAudio(file, element, trackId, title, thumb, scholarName) {
+    clearStallTimer();
+    retryCount = 0;
     globalAudio.pause();
     globalAudio.src = '';
 
@@ -797,7 +859,7 @@ function playAudio(file, element, trackId, title, thumb, scholarName) {
 
     document.getElementById('mini-player').classList.add('visible');
     setPlayingUI(true);
-    setBuffering(true); /* FIX 2: show spinner immediately on new track */
+    setBuffering(true);
     updateListNowPlaying(trackId);
 
     globalAudio.src = file;
@@ -834,7 +896,6 @@ function toggleMiniPlay(event) {
     if (event) event.stopPropagation();
     if (!globalAudio.src) return;
 
-    /* FIX 1: if audio has no src loaded yet (resume state), load and play */
     if (globalAudio.src && globalAudio.readyState === 0 && currentTrackUrl) {
         setBuffering(true);
         setPlayingUI(true);
@@ -902,7 +963,7 @@ document.getElementById('full-player-modal').addEventListener('click', function(
     if (e.target === this) closeFullPlayer();
 });
 
-/* ===== RESUME (FIX 1: restore src so mini player click works) ===== */
+/* ===== RESUME (restore src so mini player click works) ===== */
 function tryResumePlayback() {
     try {
         const data = JSON.parse(localStorage.getItem('last_resume') || 'null');
@@ -917,7 +978,6 @@ function tryResumePlayback() {
         currentTrackId = data.trackId || '';
         currentScholarId = data.scholarId || '';
         currentTrackData = data;
-        /* FIX 1: set audio src so readyState > 0 is not needed; keep paused */
         globalAudio.src = data.file;
         try {
             const saved = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(data.file))));
