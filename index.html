@@ -546,17 +546,34 @@ let retryCount = 0;
 const MAX_RETRIES = 5;
 const STALL_TIMEOUT_MS = 8000;
 
+/* IMPORTANT: browsers reset audio.currentTime to 0 the instant a fatal
+   'error' occurs, so we cannot trust globalAudio.currentTime once an
+   error/stall happens. We track the last known GOOD position separately
+   here, and use THIS (not globalAudio.currentTime) for all recovery and
+   resume logic. This is what was causing playback to jump back to 0
+   after a network error, and that 0 was then getting saved to
+   localStorage, wiping out the real resume position even after fully
+   closing and reopening the app. */
+let lastKnownPosition = 0;
+
+function persistResumePosition(force) {
+    if (!currentTrackUrl) return;
+    const now = Date.now();
+    if (!force && now - lastSaveTime <= 3000) return;
+    lastSaveTime = now;
+    try {
+        const key = 'resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl)));
+        localStorage.setItem(key, lastKnownPosition);
+    } catch(e) {}
+}
+
 globalAudio.addEventListener('timeupdate', () => {
     if (!currentTrackUrl) return;
-    // Throttle localStorage writes to once every 3 seconds instead of every tick.
-    const now = Date.now();
-    if (now - lastSaveTime > 3000) {
-        lastSaveTime = now;
-        try {
-            const key = 'resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl)));
-            localStorage.setItem(key, globalAudio.currentTime);
-        } catch(e) {}
+    if (globalAudio.currentTime > 0) {
+        lastKnownPosition = globalAudio.currentTime;
     }
+    // Throttle localStorage writes to once every 3 seconds instead of every tick.
+    persistResumePosition(false);
     if (globalAudio.duration) {
         const pct = (globalAudio.currentTime / globalAudio.duration) * 100;
         document.getElementById('fp-progress').value = pct;
@@ -567,8 +584,16 @@ globalAudio.addEventListener('timeupdate', () => {
     retryCount = 0;
 });
 
+/* Force-save the last known good position whenever the app is backgrounded
+   or closed, so an abrupt close never loses more than the current position. */
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') persistResumePosition(true);
+});
+window.addEventListener('pagehide', () => persistResumePosition(true));
+
 globalAudio.addEventListener('ended', () => {
     try { localStorage.removeItem('resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl)))); } catch(e) {}
+    lastKnownPosition = 0;
     document.querySelectorAll('.track-item').forEach(i => i.classList.remove('active-track'));
     setPlayingUI(false);
     updateListNowPlaying('');
@@ -577,6 +602,9 @@ globalAudio.addEventListener('ended', () => {
 
 globalAudio.addEventListener('error', () => {
     setBuffering(false);
+    // Save the last known good position immediately, before anything else
+    // touches the audio element, since currentTime is now unreliable (0).
+    persistResumePosition(true);
     if (retryCount < MAX_RETRIES) {
         attemptRecovery();
     } else {
@@ -588,6 +616,7 @@ globalAudio.addEventListener('error', () => {
 /* buffering events */
 globalAudio.addEventListener('waiting', () => {
     setBuffering(true);
+    persistResumePosition(true);
     clearStallTimer();
     // If it's still stuck buffering after STALL_TIMEOUT_MS, force a reload+resume.
     stallTimer = setTimeout(() => {
@@ -599,6 +628,7 @@ globalAudio.addEventListener('waiting', () => {
 globalAudio.addEventListener('playing', () => { setBuffering(false); clearStallTimer(); });
 globalAudio.addEventListener('canplay', () => { setBuffering(false); clearStallTimer(); });
 globalAudio.addEventListener('stalled', () => {
+    persistResumePosition(true);
     clearStallTimer();
     stallTimer = setTimeout(() => { attemptRecovery(); }, STALL_TIMEOUT_MS);
 });
@@ -608,11 +638,13 @@ function clearStallTimer() {
 }
 
 /* Automatically reloads the current track from where it left off.
-   This is what makes the player self-heal instead of dying silently. */
+   This is what makes the player self-heal instead of dying silently.
+   Uses lastKnownPosition (not globalAudio.currentTime) because the
+   browser may have already reset currentTime to 0 after a fatal error. */
 function attemptRecovery() {
     if (!currentTrackUrl || retryCount >= MAX_RETRIES) return;
     retryCount++;
-    const resumeTime = globalAudio.currentTime || 0;
+    const resumeTime = lastKnownPosition || 0;
     setBuffering(true);
     globalAudio.src = currentTrackUrl;
     globalAudio.load();
@@ -846,6 +878,8 @@ function playAudio(file, element, trackId, title, thumb, scholarName) {
 
     currentTrackUrl = file;
     currentTrackId = trackId;
+    lastKnownPosition = 0;
+    lastSaveTime = 0;
 
     document.getElementById('mini-thumb').src = thumb || 'https://via.placeholder.com/44';
     document.getElementById('mini-title').textContent = title;
@@ -869,6 +903,7 @@ function playAudio(file, element, trackId, title, thumb, scholarName) {
     try {
         const saved = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(file))));
         if (saved && parseFloat(saved) > 2) {
+            lastKnownPosition = parseFloat(saved);
             globalAudio.addEventListener('loadedmetadata', () => {
                 globalAudio.currentTime = parseFloat(saved);
                 globalAudio.play().catch(() => {});
@@ -904,6 +939,7 @@ function toggleMiniPlay(event) {
         try {
             const saved = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(currentTrackUrl))));
             if (saved && parseFloat(saved) > 2) {
+                lastKnownPosition = parseFloat(saved);
                 globalAudio.addEventListener('loadedmetadata', () => {
                     globalAudio.currentTime = parseFloat(saved);
                     globalAudio.play().catch(() => {});
@@ -982,11 +1018,13 @@ function tryResumePlayback() {
         try {
             const saved = localStorage.getItem('resume_' + btoa(unescape(encodeURIComponent(data.file))));
             if (saved && parseFloat(saved) > 2) {
+                lastKnownPosition = parseFloat(saved);
                 globalAudio.addEventListener('loadedmetadata', () => {
                     globalAudio.currentTime = parseFloat(saved);
                 }, { once: true });
             }
         } catch(e) {}
+        globalAudio.load();
         document.getElementById('mini-player').classList.add('visible');
         setPlayingUI(false);
     } catch(e) {}
